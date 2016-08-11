@@ -3,7 +3,6 @@
 Module.register('motiondetector',{
 	
 	defaults: {
-		powerSaving: true,
 		timeout: 120000 // 5 mins
 	},
 
@@ -30,8 +29,7 @@ Module.register('motiondetector',{
         var _this = this;
 
 		_this.sendSocketNotification('MOTION_DETECTED', _this.config);
-
-		
+				
          var core = new MotionDetector.Core(function (detected) {
             if (detected) {
 				_this.lastTimeMotionDetected = new Date();
