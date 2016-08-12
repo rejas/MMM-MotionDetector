@@ -9,6 +9,8 @@
  * 
  */
 
+var MotionDetector = {};
+
 ;(function(App) {
 
 	"use strict";
