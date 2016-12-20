@@ -91,7 +91,7 @@ var DiffCamEngine = (function() {
  						} else {
  							video.src = vendorURL.createObjectURL(localMediaStream);
  						}
-						self.initSuccess(localMediaStream);
+						initSuccess(localMediaStream);
  					}
  				}, 
  				console.error
