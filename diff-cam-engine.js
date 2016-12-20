@@ -77,15 +77,37 @@ var DiffCamEngine = (function() {
 	}
 
 	function requestWebcam() {
-		var constraints = {
-			audio: false,
-			video: { width: captureWidth, height: captureHeight }
-		};
+		    var self = this;
+ 			(navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia).call(
+ 				navigator, 
+ 				{video: true}, 
+ 				function(localMediaStream) {
+ 					if(video) {
+ 						var vendorURL = window.URL || window.webkitURL;
+ 
+ 						if (navigator.mozGetUserMedia) {
+ 							video.mozSrcObject = localMediaStream;
+ 							video.play();
+ 						} else {
+ 							video.src = vendorURL.createObjectURL(localMediaStream);
+ 						}
+						self.initSuccess(localMediaStream);
+ 					}
+ 				}, 
+ 				console.error
+ 			);
+ 	}
 
-		navigator.getUserMedia(constraints)
-			.then(initSuccess)
-			.catch(initError);
-	}
+	// function requestWebcam() {
+	// 	var constraints = {
+	// 		audio: false,
+	// 		video: { width: captureWidth, height: captureHeight }
+	// 	};
+
+	// 	navigator.getUserMedia(constraints)
+	// 		.then(initSuccess)
+	// 		.catch(initError);
+	// }
 
 	function initSuccess(requestedStream) {
 		stream = requestedStream;
