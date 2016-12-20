@@ -82,7 +82,7 @@ var DiffCamEngine = (function() {
 			video: { width: captureWidth, height: captureHeight }
 		};
 
-		navigator.mediaDevices.getUserMedia(constraints)
+		navigator.mediaDevices.webkitGetUserMedia(constraints)
 			.then(initSuccess)
 			.catch(initError);
 	}
