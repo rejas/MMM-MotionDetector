@@ -4,7 +4,8 @@ Module.register('motiondetector',{
 
     defaults: {
         powerSaving: true,
-        timeout: 120000 // 5 mins
+        captureIntervalTime: 1000, // 1 second
+        timeout: 120000 // 5 minutes
     },
 
     lastTimeMotionDetected: null,
@@ -40,6 +41,7 @@ Module.register('motiondetector',{
 
         DiffCamEngine.init({
             video: video,
+            captureIntervalTime: _this.config.captureIntervalTime,
             motionCanvas: canvas,
             initSuccessCallback: function () {
                 DiffCamEngine.start();
