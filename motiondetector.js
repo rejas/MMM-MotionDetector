@@ -27,19 +27,16 @@ Module.register('motiondetector',{
 
         this.lastTimeMotionDetected = new Date();
 
-        var _this = this;
-
         // make sure that the monitor is on when starting
-        _this.sendSocketNotification('MOTION_DETECTED', _this.config);
+        this.sendSocketNotification('MOTION_DETECTED', this.config);
 
-
+        var _this = this;
+        var canvas = document.createElement('canvas');
         var video = document.createElement('video');
         var cameraPreview = document.createElement("div");
         cameraPreview.id = "cameraPreview";
-        cameraPreview.style = "visibility:hidden;"
+        cameraPreview.style = "visibility:hidden;";
         cameraPreview.appendChild(video);
-
-        var canvas = document.createElement('canvas');
 
         DiffCamEngine.init({
             video: video,
@@ -71,8 +68,5 @@ Module.register('motiondetector',{
                 console.log('score:' + score);
             }
         });
-
-    },
-
-
+    }
 });

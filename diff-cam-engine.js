@@ -77,7 +77,6 @@ var DiffCamEngine = (function() {
     }
 
     function requestWebcam() {
-        var self = this;
         (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia).call(
             navigator,
             {video: true},
@@ -211,7 +210,6 @@ var DiffCamEngine = (function() {
                 if (includeMotionPixels) {
                     motionPixels = calculateMotionPixels(motionPixels, coords.x, coords.y, pixelDiff);
                 }
-
             }
         }
 
