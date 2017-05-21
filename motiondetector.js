@@ -3,8 +3,8 @@
 Module.register('motiondetector',{
 
     defaults: {
-        powerSaving: true,
         captureIntervalTime: 1000, // 1 second
+        scoreThreshold: 20,
         timeout: 120000 // 5 minutes
     },
 
@@ -51,7 +51,7 @@ Module.register('motiondetector',{
             },
             captureCallback: function(payload){
                 var score = payload.score;
-                if (score > 20) {
+                if (score > _this.config.scoreThreshold) {
                     _this.lastTimeMotionDetected = new Date();
                     if (_this.poweredOff) {
                         _this.poweredOff = false;
