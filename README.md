@@ -1,11 +1,11 @@
-# motiondetector
+# MMM-MotionDetector
 
 ## Installation
 
 Just clone the module into your MagicMirror modules folder:
 
 ```
-git clone https://github.com/alexyak/motiondetector.git
+git clone https://github.com/rejas/MMM-MotionDetector.git
 ```
 
 
@@ -21,7 +21,7 @@ Example for the `config.js`:
 
 ``` JavaScript
 {
-        module: 'motiondetector',
+        module: 'MMM-MotionDetector',
         config: {
                 captureIntervalTime: 5000,
                 scoreThreshold: 200,
