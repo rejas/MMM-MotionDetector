@@ -1,6 +1,6 @@
 'use strict';
 
-Module.register('motiondetector',{
+Module.register('MMM-MotionDetector',{
 
     defaults: {
         captureIntervalTime: 1000, // 1 second
