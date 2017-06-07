@@ -5,7 +5,7 @@ Module.register('MMM-MotionDetector',{
     defaults: {
         captureIntervalTime: 1000, // 1 second
         scoreThreshold: 20,
-        timeout: 120000 // 5 minutes
+        timeout: 120000 // 2 minutes
     },
 
     lastTimeMotionDetected: null,
