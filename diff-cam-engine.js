@@ -82,7 +82,7 @@ var DiffCamEngine = (function() {
             {video: true},
             function(localMediaStream) {
                 if(video) {
-                    var vendorURL = window.URL || window.webkitURL;
+                    const vendorURL = window.URL || window.webkitURL;
 
                     if (navigator.mozGetUserMedia) {
                         video.mozSrcObject = localMediaStream;
@@ -189,10 +189,10 @@ var DiffCamEngine = (function() {
         var rgba = diffImageData.data;
 
         // pixel adjustments are done by reference directly on diffImageData
-        var score = 0;
-        var motionPixels = includeMotionPixels ? [] : undefined;
-        var motionBox = undefined;
-        for (var i = 0; i < rgba.length; i += 4) {
+        let score = 0;
+        let motionPixels = includeMotionPixels ? [] : undefined;
+        let motionBox = undefined;
+        for (let i = 0; i < rgba.length; i += 4) {
             var pixelDiff = rgba[i] * 0.3 + rgba[i + 1] * 0.6 + rgba[i + 2] * 0.1;
             var normalized = Math.min(255, pixelDiff * (255 / pixelDiffThreshold));
             rgba[i] = 0;
@@ -229,7 +229,7 @@ var DiffCamEngine = (function() {
 
     function calculateMotionBox(currentMotionBox, x, y) {
         // init motion box on demand
-        var motionBox = currentMotionBox || {
+        let motionBox = currentMotionBox || {
                 x: { min: coords.x, max: x },
                 y: { min: coords.y, max: y }
             };
