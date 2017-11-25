@@ -93,7 +93,7 @@ var DiffCamEngine = (function() {
                     initSuccess(localMediaStream);
                 }
             },
-            console.error
+            Log.error
         );
     }
 
@@ -114,7 +114,7 @@ var DiffCamEngine = (function() {
     }
 
     function initError(error) {
-        console.log(error);
+        Log.error(error);
         initErrorCallback();
     }
 
