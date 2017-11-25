@@ -47,7 +47,7 @@ Module.register('MMM-MotionDetector',{
                 DiffCamEngine.start();
             },
             initErrorCallback: function () {
-                Log.info('MMM-MotionDetector: error init cam engine');
+                Log.error('MMM-MotionDetector: error init cam engine');
             },
             captureCallback: function(payload) {
                 const score = payload.score;
