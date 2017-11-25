@@ -24,7 +24,7 @@ Module.register('MMM-MotionDetector',{
     },
 
     start: function() {
-        Log.info('Starting module: ' + this.name);
+        Log.info('MMM-MotionDetector: starting up');
 
         this.lastTimeMotionDetected = new Date();
 
@@ -47,7 +47,7 @@ Module.register('MMM-MotionDetector',{
                 DiffCamEngine.start();
             },
             initErrorCallback: function () {
-                console.log('error init cam engine');
+                Log.info('MMM-MotionDetector: error init cam engine');
             },
             captureCallback: function(payload){
                 var score = payload.score;
@@ -67,7 +67,7 @@ Module.register('MMM-MotionDetector',{
                         _this.poweredOff = true;
                     }
                 }
-                console.log('score:' + score);
+                Log.info('MMM-MotionDetector: score ' + score);
             }
         });
     }
