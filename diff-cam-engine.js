@@ -27,6 +27,7 @@ var DiffCamEngine = (function() {
     var includeMotionPixels;	// flag to create object denoting pixels with motion
 
 	var coords;
+    var mediaDevices;
 
     function init(options) {
         // sanity check
@@ -78,7 +79,7 @@ var DiffCamEngine = (function() {
 
         // Setup getUserMedia, with polyfill for older browsers
         // Adapted from: https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia
-        this.mediaDevices = (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) ?
+        mediaDevices = (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) ?
             navigator.mediaDevices : ((navigator.mozGetUserMedia || navigator.webkitGetUserMedia) ? {
                 getUserMedia: function(c) {
                     return new Promise(function(y, n) {
@@ -93,12 +94,13 @@ var DiffCamEngine = (function() {
 
     function requestWebcam() {
 
-        this.mediaDevices.getUserMedia({
+        mediaDevices.getUserMedia({
             "audio": false,
             "video": true
         })
             .then( function(localMediaStream) {
                 if(video) {
+                    /*
                     const vendorURL = window.URL || window.webkitURL;
 
                     if (navigator.mozGetUserMedia) {
@@ -107,6 +109,7 @@ var DiffCamEngine = (function() {
                     } else {
                         video.src = vendorURL.createObjectURL(localMediaStream);
                     }
+                    */
                     initSuccess(localMediaStream);
                 }
             })
