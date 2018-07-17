@@ -76,10 +76,45 @@ var DiffCamEngine = (function() {
         motionCanvas.height = diffHeight;
         motionContext = motionCanvas.getContext('2d');
 
+        // Setup getUserMedia, with polyfill for older browsers
+        // Adapted from: https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia
+        this.mediaDevices = (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) ?
+            navigator.mediaDevices : ((navigator.mozGetUserMedia || navigator.webkitGetUserMedia) ? {
+                getUserMedia: function(c) {
+                    return new Promise(function(y, n) {
+                        (navigator.mozGetUserMedia ||
+                            navigator.webkitGetUserMedia).call(navigator, c, y, n);
+                    });
+                }
+            } : null);
+
         requestWebcam();
     }
 
     function requestWebcam() {
+
+        this.mediaDevices.getUserMedia({
+            "audio": false,
+            "video": true
+        })
+            .then( function(localMediaStream) {
+                if(video) {
+                    const vendorURL = window.URL || window.webkitURL;
+
+                    if (navigator.mozGetUserMedia) {
+                        video.mozSrcObject = localMediaStream;
+                        video.play();
+                    } else {
+                        video.src = vendorURL.createObjectURL(localMediaStream);
+                    }
+                    initSuccess(localMediaStream);
+                }
+            })
+            .catch( function(err) {
+                Log.error(err);
+            });
+
+        /*
         (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia).call(
             navigator,
             {video: true},
@@ -100,7 +135,21 @@ var DiffCamEngine = (function() {
                 initError(error);
             }
         );
+        */
     }
+
+    /*
+    function requestWebcam() {
+        var constraints = {
+            audio: false,
+            video: { width: captureWidth, height: captureHeight }
+        };
+
+        navigator.mediaDevices.getUserMedia(constraints)
+            .then(initSuccess)
+            .catch(initError);
+    }
+    */
 
     function initSuccess(requestedStream) {
         stream = requestedStream;
