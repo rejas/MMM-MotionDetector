@@ -1,12 +1,4 @@
 'use strict';
-
-/* Magic Mirror
- * Module: MMM-PIR-Sensor
- *
- * By Paul-Vincent Roll http://paulvincentroll.com
- * MIT Licensed.
- */
-
 const NodeHelper = require('node_helper');
 const exec = require('child_process').exec;
 
