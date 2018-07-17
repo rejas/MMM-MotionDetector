@@ -70,8 +70,8 @@ Module.register('MMM-MotionDetector',{
                     }
                 }
                 const info = 'MMM-MotionDetector: score ' + score;
-                Log.info(warning);
-                console.info(warning);
+                Log.info(info);
+                console.info(info);
             }
         });
     }
