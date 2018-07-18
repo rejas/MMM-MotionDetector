@@ -29,7 +29,7 @@ Module.register('MMM-MotionDetector',{
         this.lastTimeMotionDetected = new Date();
 
         // make sure that the monitor is on when starting
-        this.sendSocketNotification('MOTION_DETECTED', this.config);
+        this.sendSocketNotification('MOTION_DETECTED', { score: 'initial'});
 
         let _this = this;
         let canvas = document.createElement('canvas');
@@ -47,9 +47,7 @@ Module.register('MMM-MotionDetector',{
                 DiffCamEngine.start();
             },
             initErrorCallback: function () {
-                const warning = 'MMM-MotionDetector: error init cam engine';
-                Log.warn(warning);
-                console.log(warning);
+                Log.error('MMM-MotionDetector: error init cam engine');
             },
             captureCallback: function(payload) {
                 const score = payload.score;
@@ -69,9 +67,7 @@ Module.register('MMM-MotionDetector',{
                         _this.poweredOff = true;
                     }
                 }
-                const info = 'MMM-MotionDetector: score ' + score;
-                Log.info(info);
-                console.info(info);
+                Log.info('MMM-MotionDetector: score ' + score);
             }
         });
     }
