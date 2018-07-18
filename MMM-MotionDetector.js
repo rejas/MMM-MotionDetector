@@ -57,7 +57,7 @@ Module.register('MMM-MotionDetector',{
                     _this.lastTimeMotionDetected = new Date();
                     if (_this.poweredOff) {
                         _this.poweredOff = false;
-                        _this.sendSocketNotification('MOTION_DETECTED', _this.config);
+                        _this.sendSocketNotification('MOTION_DETECTED', score);
                     }
                 }
                 else {

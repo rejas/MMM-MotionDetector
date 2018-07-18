@@ -32,19 +32,20 @@ module.exports = NodeHelper.create({
     },
 
     isMonitorOn: function(resultCallback) {
-        exec('/opt/vc/bin/tvservice -s', function(err, out, code) {
-            console.log('MMM-MotionDetector: MONITOR_STATE ' + out);
-            console.log('MMM-MotionDetector: MONITOR_CODE ' + code);
-            const monitorOn = !(out.indexOf('0x120002') > 0);
+        exec('/opt/vc/bin/tvservice -s', function(err, stdout, stderr) {
+            if (err)
+                console.error('MMM-MotionDetector: MONITOR_STATE error ' + stderr);
+            else
+                console.log('MMM-MotionDetector: MONITOR_STATE ' + out);
+            const monitorOn = !(stdout.indexOf('0x120002') > 0);
             resultCallback(monitorOn);
         });
     },
 
     // Subclass socketNotificationReceived received.
     socketNotificationReceived: function (notification, payload) {
-        console.log(payload);
         if (notification === 'MOTION_DETECTED' && this.started === false) {
-            console.log('MMM-MotionDetector: MOTION_DETECTED');
+            console.log('MMM-MotionDetector: MOTION_DETECTED, score ' + payload);
             this.started = true;
             this.activateMonitor();
         }
