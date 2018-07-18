@@ -77,6 +77,7 @@ var DiffCamEngine = (function() {
 
         // Setup getUserMedia, with polyfill for older browsers
         // Adapted from: https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia
+        /*
         mediaDevices = (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) ?
             navigator.mediaDevices : ((navigator.mozGetUserMedia || navigator.webkitGetUserMedia) ? {
                 getUserMedia: function(c) {
@@ -86,19 +87,20 @@ var DiffCamEngine = (function() {
                     });
                 }
             } : null);
+        */
 
         requestWebcam();
     }
 
     function requestWebcam() {
 
+        /*
         mediaDevices.getUserMedia({
             "audio": false,
             "video": true
         })
-            .then( function(localMediaStream) {
+            .then(function(localMediaStream) {
                 if(video) {
-                    /*
                     const vendorURL = window.URL || window.webkitURL;
 
                     if (navigator.mozGetUserMedia) {
@@ -107,15 +109,14 @@ var DiffCamEngine = (function() {
                     } else {
                         video.src = vendorURL.createObjectURL(localMediaStream);
                     }
-                    */
                     initSuccess(localMediaStream);
                 }
             })
-            .catch( function(err) {
+            .catch(function(err) {
                 initError(err);
             });
+        */
 
-        /*
         (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia).call(
             navigator,
             {video: true},
@@ -132,9 +133,8 @@ var DiffCamEngine = (function() {
                     initSuccess(localMediaStream);
                 }
             },
-            Log.error
+            initError
         );
-        */
     }
 
     /*
