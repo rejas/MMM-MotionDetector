@@ -8,9 +8,22 @@ Module.register('MMM-MotionDetector',{
         timeout: 120000 // 2 minutes
     },
 
+    lastScore: 0,
+
     lastTimeMotionDetected: null,
 
     poweredOff: false,
+
+    getDom: function () {
+        let wrapper = document.createElement("div");
+        let headline = document.createElement("h1");
+        headline.innerHTML = "MMM-Motion";
+        wrapper.appendChild(headline);
+        let score = document.createElement("p");
+        score.innerHTML = "ls: " + this.lastScore + ", lt: " + this.lastTimeMotionDetected;
+        wrapper.appendChild(score);
+        return wrapper;
+    },
 
     getScripts: function() {
         return ['diff-cam-engine.js'];
@@ -51,12 +64,14 @@ Module.register('MMM-MotionDetector',{
             },
             captureCallback: function(payload) {
                 const score = payload.score;
+                _this.lastScore = score;
                 if (score > _this.config.scoreThreshold) {
                     _this.lastTimeMotionDetected = new Date();
                     if (_this.poweredOff) {
                         _this.poweredOff = false;
                         _this.sendSocketNotification('MOTION_DETECTED', payload);
                     }
+                    _this.updateDom();
                 }
                 else {
                     const currentDate = new Date(),
