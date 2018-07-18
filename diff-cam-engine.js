@@ -93,20 +93,11 @@ var DiffCamEngine = (function() {
                     initSuccess(localMediaStream);
                 }
             },
-            Log.error
+            function(error) {
+                initError(error);
+            }
         );
     }
-
-    // function requestWebcam() {
-    // 	var constraints = {
-    // 		audio: false,
-    // 		video: { width: captureWidth, height: captureHeight }
-    // 	};
-
-    // 	navigator.getUserMedia(constraints)
-    // 		.then(initSuccess)
-    // 		.catch(initError);
-    // }
 
     function initSuccess(requestedStream) {
         stream = requestedStream;
