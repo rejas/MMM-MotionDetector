@@ -36,7 +36,7 @@ module.exports = NodeHelper.create({
             if (err)
                 console.error('MMM-MotionDetector: MONITOR_STATE error ' + stderr);
             else
-                console.log('MMM-MotionDetector: MONITOR_STATE ' + out);
+                console.log('MMM-MotionDetector: MONITOR_STATE ' + stdout);
             const monitorOn = !(stdout.indexOf('0x120002') > 0);
             resultCallback(monitorOn);
         });
@@ -45,7 +45,7 @@ module.exports = NodeHelper.create({
     // Subclass socketNotificationReceived received.
     socketNotificationReceived: function (notification, payload) {
         if (notification === 'MOTION_DETECTED' && this.started === false) {
-            console.log('MMM-MotionDetector: MOTION_DETECTED, score ' + payload);
+            console.log('MMM-MotionDetector: MOTION_DETECTED, score ' + payload.score);
             this.started = true;
             this.activateMonitor();
         }
