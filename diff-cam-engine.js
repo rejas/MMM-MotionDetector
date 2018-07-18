@@ -157,7 +157,7 @@ var DiffCamEngine = (function() {
 
     function initError(error) {
         Log.error(error);
-        initErrorCallback();
+        initErrorCallback(error);
     }
 
     function start() {

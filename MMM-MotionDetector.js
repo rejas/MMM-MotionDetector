@@ -63,8 +63,8 @@ Module.register('MMM-MotionDetector',{
                 _this.sendNotification("SHOW_ALERT", {type: "notification", message: "started"});
                 DiffCamEngine.start();
             },
-            initErrorCallback: function () {
-                _this.sendNotification("SHOW_ALERT", {type: "notification", message: "error"});
+            initErrorCallback: function (err) {
+                _this.sendNotification("SHOW_ALERT", {type: "notification", message: err.message});
                 Log.error('MMM-MotionDetector: error init cam engine');
             },
             captureCallback: function(payload) {
