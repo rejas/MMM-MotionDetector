@@ -61,11 +61,13 @@ Module.register('MMM-MotionDetector',{
             motionCanvas: canvas,
             initSuccessCallback: function () {
                 Log.info('MMM-MotionDetector: DiffCamEngine init successful');
+                _this.sendNotification("SHOW_ALERT", {type: "notification", message: "started"});
                 DiffCamEngine.start();
             },
             initErrorCallback: function (error) {
                 Log.error('MMM-MotionDetector: DiffCamEngine init failed, error:');
                 Log.error(error);
+                _this.sendNotification("SHOW_ALERT", {type: "notification", message: "error"});
             },
             captureCallback: function(payload) {
                 const score = payload.score;
