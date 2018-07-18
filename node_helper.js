@@ -3,6 +3,7 @@ const NodeHelper = require('node_helper');
 const exec = require('child_process').exec;
 
 module.exports = NodeHelper.create({
+
     start: function () {
         this.started = false;
         this.isMonitorOn(function(result) {
@@ -13,7 +14,7 @@ module.exports = NodeHelper.create({
     activateMonitor: function () {
         this.isMonitorOn(function(result) {
             if (!result) {
-                exec('/opt/vc/bin/tvservice --preferred && sudo chvt 6 && sudo chvt 7', null);
+                exec('/opt/vc/bin/tvservice -p && sudo chvt 6 && sudo chvt 7', null);
                 console.log('MMM-MotionDetector: monitor has been activated');
             }
         });
@@ -32,13 +33,9 @@ module.exports = NodeHelper.create({
 
     isMonitorOn: function(resultCallback) {
         exec('/opt/vc/bin/tvservice -s', function(err, out, code) {
-            if (out.indexOf('0x120002') > 0) {
-                resultCallback(false);
-            }
-            else {
-                resultCallback(true);
-            }
-            console.log('MMM-MotionDetector: monitor ' + out);
+            console.log('MMM-MotionDetector: MONITOR_STATE ' + out);
+            const monitorOn = !(out.indexOf('0x120002') > 0);
+            resultCallback(monitorOn);
         });
     },
 
