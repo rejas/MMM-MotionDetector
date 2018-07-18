@@ -3,6 +3,7 @@ const NodeHelper = require('node_helper');
 const exec = require('child_process').exec;
 
 module.exports = NodeHelper.create({
+
     start: function () {
         this.started = false;
         this.isMonitorOn(function(result) {
