@@ -60,9 +60,11 @@ Module.register('MMM-MotionDetector',{
             captureIntervalTime: _this.config.captureIntervalTime,
             motionCanvas: canvas,
             initSuccessCallback: function () {
+                _this.sendNotification("SHOW_ALERT", {type: "notification", message: "started"});
                 DiffCamEngine.start();
             },
             initErrorCallback: function () {
+                _this.sendNotification("SHOW_ALERT", {type: "notification", message: "error"});
                 Log.error('MMM-MotionDetector: error init cam engine');
             },
             captureCallback: function(payload) {
