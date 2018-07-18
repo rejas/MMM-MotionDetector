@@ -10,18 +10,21 @@ Module.register('MMM-MotionDetector',{
 
     lastScore: 0,
 
-    lastTimeMotionDetected: null,
+    lastTimeMotionDetected: new Date(),
 
     poweredOff: false,
 
     getDom: function () {
         let wrapper = document.createElement("div");
-        let headline = document.createElement("h1");
+        let headline = document.createElement("h3");
         headline.innerHTML = "MMM-Motion";
         wrapper.appendChild(headline);
         let score = document.createElement("p");
-        score.innerHTML = "ls: " + this.lastScore + ", lt: " + this.lastTimeMotionDetected;
+        score.innerHTML = "last score: " + this.lastScore;
         wrapper.appendChild(score);
+        let time = document.createElement("p");
+        time.innerHTML = "last time: " + this.lastTimeMotionDetected.toLocaleTimeString();
+        wrapper.appendChild(time);
         return wrapper;
     },
 
