@@ -135,7 +135,9 @@ var DiffCamEngine = (function() {
                     initSuccess(localMediaStream);
                 }
             },
-            initError
+            function(error) {
+                initError(error);
+            }
         );
     }
 
