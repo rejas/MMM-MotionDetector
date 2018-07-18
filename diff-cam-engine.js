@@ -112,7 +112,7 @@ var DiffCamEngine = (function() {
                 }
             })
             .catch( function(err) {
-                Log.error(err);
+                initError(err);
             });
 
         /*
