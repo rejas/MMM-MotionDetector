@@ -8,6 +8,8 @@ Just clone the module into your MagicMirror modules folder:
 git clone https://github.com/rejas/MMM-MotionDetector.git
 ```
 
+Accessing your (web)cam requires to have the client run on localhost or a HTTPS host (due to new requirements in Chrome for getUserMedia). The default value in your MagicMirror config.js is already `localhost` so most users shouldn't be affected.
+
 
 ## Configuration
 
