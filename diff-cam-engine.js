@@ -137,19 +137,6 @@ var DiffCamEngine = (function() {
         */
     }
 
-    /*
-    function requestWebcam() {
-        var constraints = {
-            audio: false,
-            video: { width: captureWidth, height: captureHeight }
-        };
-
-        navigator.mediaDevices.getUserMedia(constraints)
-            .then(initSuccess)
-            .catch(initError);
-    }
-    */
-
     function initSuccess(requestedStream) {
         stream = requestedStream;
         initSuccessCallback();
