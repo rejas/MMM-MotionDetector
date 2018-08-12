@@ -12,6 +12,7 @@ git clone https://github.com/rejas/MMM-MotionDetector.git
 
 Accessing your (web)cam requires to have the client run on localhost or a HTTPS host (due to new requirements in Chrome for getUserMedia). The default value in your MagicMirror config.js is already `localhost` so most users shouldn't be affected.
 
+DOES NOT work with the vc4-kms-v3d or vc4-fkms-v3d driver so far. Please use only the default driver.
 
 ## Configuration
 
