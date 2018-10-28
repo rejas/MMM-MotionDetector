@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "a motion detector module for MagicMirror",
   "author": "rejas@github.com",
-  "homepage": "https://github.com/rejas/MMM-MotionDetector#readme"
+  "homepage": "https://github.com/rejas/MMM-MotionDetector#readme",
   "license": "MIT",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
