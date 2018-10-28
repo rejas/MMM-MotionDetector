@@ -13,7 +13,7 @@ module.exports = NodeHelper.create({
     activateMonitor: function () {
         this.isMonitorOn(function(result) {
             if (!result) {
-                exec('/opt/vc/bin/tvservice -p && sudo chvt 6 && sudo chvt 7', function(err, out, code) {
+                exec('vcgencmd display_power 1', function(err, out, code) {
                     if (err) {
                         console.error('MMM-MotionDetector: error activating monitor: ' + code);
                     } else {
@@ -28,7 +28,7 @@ module.exports = NodeHelper.create({
     deactivateMonitor: function () {
         this.isMonitorOn(function(result) {
             if (result) {
-                exec('/opt/vc/bin/tvservice -o', function(err, out, code) {
+                exec('vcgencmd display_power 0', function(err, out, code) {
                     if (err) {
                         console.error('MMM-MotionDetector: error deactivating monitor: ' + code);
                     } else {
@@ -41,12 +41,12 @@ module.exports = NodeHelper.create({
     },
 
     isMonitorOn: function(resultCallback) {
-        exec('/opt/vc/bin/tvservice -s', function(err, out, code) {
+        exec('vcgencmd display_power', function(err, out, code) {
             if (err) {
                 console.error('MMM-MotionDetector: error calling monitor status: ' + code);
             } else {
                 console.log('MMM-MotionDetector: monitor ' + out);
-                if (out.indexOf('0x120002') === 0) {
+                if (out.indexOf('=0') > 0) {
                     resultCallback(true);
                 }
             }
