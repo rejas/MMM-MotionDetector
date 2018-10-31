@@ -44,16 +44,14 @@ module.exports = NodeHelper.create({
         exec('vcgencmd display_power', function(err, out, code) {
             if (err) {
                 console.error('MMM-MotionDetector: error calling monitor status: ' + code);
-            } else {
-                console.log('MMM-MotionDetector: monitor ' + out);
-                if (out.indexOf('=0') > 0) {
-                    resultCallback(true);
-                }
+                return;
             }
 
-            resultCallback(false);
+            console.log('MMM-MotionDetector: monitor ' + out);
+            resultCallback(out.includes('=1'));
         });
     },
+
 
     // Subclass socketNotificationReceived received.
     socketNotificationReceived: function (notification, payload) {
