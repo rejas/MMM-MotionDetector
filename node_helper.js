@@ -52,7 +52,6 @@ module.exports = NodeHelper.create({
         });
     },
 
-
     // Subclass socketNotificationReceived received.
     socketNotificationReceived: function (notification, payload) {
         if (notification === 'MOTION_DETECTED' && this.started === false) {
