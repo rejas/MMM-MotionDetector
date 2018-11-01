@@ -13,8 +13,13 @@ module.exports = NodeHelper.create({
     activateMonitor: function () {
         this.isMonitorOn(function(result) {
             if (!result) {
-                exec('/opt/vc/bin/tvservice --preferred && sudo chvt 6 && sudo chvt 7', null);
-                console.log('MMM-MotionDetector: monitor has been activated');
+                exec('vcgencmd display_power 1', function(err, out, code) {
+                    if (err) {
+                        console.error('MMM-MotionDetector: error activating monitor: ' + code);
+                    } else {
+                        console.log('MMM-MotionDetector: monitor has been activated');
+                    }
+                });
             }
         });
         this.started = false;
@@ -23,24 +28,30 @@ module.exports = NodeHelper.create({
     deactivateMonitor: function () {
         this.isMonitorOn(function(result) {
             if (result) {
-                exec('/opt/vc/bin/tvservice -o', null);
-                console.log('MMM-MotionDetector: monitor has been deactivated');
+                exec('vcgencmd display_power 0', function(err, out, code) {
+                    if (err) {
+                        console.error('MMM-MotionDetector: error deactivating monitor: ' + code);
+                    } else {
+                        console.log('MMM-MotionDetector: monitor has been deactivated');
+                    }
+                });
             }
         });
         this.started = false;
     },
 
     isMonitorOn: function(resultCallback) {
-        exec('/opt/vc/bin/tvservice -s', function(err, out, code) {
-            if (out.indexOf('0x120002') > 0) {
-                resultCallback(false);
+        exec('vcgencmd display_power', function(err, out, code) {
+            if (err) {
+                console.error('MMM-MotionDetector: error calling monitor status: ' + code);
+                return;
             }
-            else {
-                resultCallback(true);
-            }
+
             console.log('MMM-MotionDetector: monitor ' + out);
+            resultCallback(out.includes('=1'));
         });
     },
+
 
     // Subclass socketNotificationReceived received.
     socketNotificationReceived: function (notification, payload) {
