@@ -53,7 +53,7 @@ module.exports = NodeHelper.create({
     },
 
     // Subclass socketNotificationReceived received.
-    socketNotificationReceived: function (notification, payload) {
+    socketNotificationReceived: function (notification, payload) { // eslint-disable-line
         if (notification === 'MOTION_DETECTED' && this.started === false) {
             console.log('MMM-MotionDetector: MOTION_DETECTED');
             this.started = true;

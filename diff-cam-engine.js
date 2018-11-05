@@ -1,6 +1,6 @@
 /* global Log */
 
-var DiffCamEngine = (function() {
+var DiffCamEngine = (function() {  // eslint-disable-line
     var stream;					// stream obtained from webcam
     var video;					// shows stream
     var captureCanvas;			// internal canvas for capturing full images from video
@@ -237,7 +237,7 @@ var DiffCamEngine = (function() {
         return motionBox;
     }
 
-    function calculateMotionPixels(motionPixels, x, y, pixelDiff) {
+    function calculateMotionPixels(motionPixels, x, y, pixelDiff) { // eslint-disable-line
         motionPixels[x] = motionPixels[x] || [];
         motionPixels[x][y] = true;
 
