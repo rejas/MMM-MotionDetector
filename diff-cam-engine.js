@@ -112,29 +112,6 @@ var DiffCamEngine = (function() {
             .catch(function(err) {
                 initError(err);
             });
-
-        /*
-        (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia).call(
-            navigator,
-            {video: true},
-            function(localMediaStream) {
-                if(video) {
-                    const vendorURL = window.URL || window.webkitURL;
-
-                    if (navigator.mozGetUserMedia) {
-                        video.mozSrcObject = localMediaStream;
-                        video.play();
-                    } else {
-                        video.src = vendorURL.createObjectURL(localMediaStream);
-                    }
-                    initSuccess(localMediaStream);
-                }
-            },
-            function(error) {
-                initError(error);
-            }
-        );
-        */
     }
 
     function initSuccess(requestedStream) {
