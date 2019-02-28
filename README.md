@@ -12,6 +12,13 @@ git clone https://github.com/rejas/MMM-MotionDetector.git
 
 Accessing your (web)cam requires to have the client run on localhost or a HTTPS host (due to new requirements in Chrome for getUserMedia). The default value in your MagicMirror config.js is already `localhost` so most users shouldn't be affected.
 
+Just in case you still have problems (like [here](https://github.com/rejas/MMM-MotionDetector/issues/6)) check your config and see if you can solve it by outcommenting the ip-address under
+
+``` JavaScript
+var config = {
+    	address : '0.0.0.0',
+``` 
+
 ## Configuration
 
 |Option|Description|
