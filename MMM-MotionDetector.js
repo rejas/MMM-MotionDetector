@@ -8,9 +8,23 @@ Module.register('MMM-MotionDetector',{
         timeout: 120000 // 2 minutes
     },
 
+    lastScoreDetected: null,
     lastTimeMotionDetected: null,
-
     poweredOff: false,
+
+    getDom: function () {
+        let wrapper = document.createElement("div");
+        let headline = document.createElement("h3");
+        headline.innerHTML = "MMM-Motion";
+        wrapper.appendChild(headline);
+        let score = document.createElement("p");
+        score.innerHTML = "last score: " + this.lastScoreDetected;
+        wrapper.appendChild(score);
+        let time = document.createElement("p");
+        time.innerHTML = "last time motion detected: " + this.lastTimeMotionDetected.toLocaleTimeString();
+        wrapper.appendChild(time);
+        return wrapper;
+    },
 
     getScripts: function() {
         return ['diff-cam-engine.js'];
@@ -26,10 +40,11 @@ Module.register('MMM-MotionDetector',{
     start: function() {
         Log.info('MMM-MotionDetector: starting up');
 
+        this.lastScoreDetected = 0;
         this.lastTimeMotionDetected = new Date();
 
         // make sure that the monitor is on when starting
-        this.sendSocketNotification('MOTION_DETECTED', this.config);
+        this.sendSocketNotification('MOTION_DETECTED', 0);
 
         let _this = this;
         let canvas = document.createElement('canvas');
@@ -44,10 +59,12 @@ Module.register('MMM-MotionDetector',{
             captureIntervalTime: _this.config.captureIntervalTime,
             motionCanvas: canvas,
             initSuccessCallback: function () {
+                const warning = 'MMM-MotionDetector: DiffCamEngine init successful';
+                Log.info(warning);
                 DiffCamEngine.start();
             },
             initErrorCallback: function () {
-                const warning = 'MMM-MotionDetector: error init cam engine';
+                const warning = 'MMM-MotionDetector: DiffCamEngine init failed';
                 Log.warn(warning);
                 console.log(warning);
             },
@@ -56,8 +73,8 @@ Module.register('MMM-MotionDetector',{
                 if (score > _this.config.scoreThreshold) {
                     _this.lastTimeMotionDetected = new Date();
                     if (_this.poweredOff) {
+                        _this.sendSocketNotification('MOTION_DETECTED', score);
                         _this.poweredOff = false;
-                        _this.sendSocketNotification('MOTION_DETECTED', _this.config);
                     }
                 }
                 else {
@@ -69,6 +86,8 @@ Module.register('MMM-MotionDetector',{
                         _this.poweredOff = true;
                     }
                 }
+                _this.lastScoreDetected = score;
+                _this.updateDom();
                 const info = 'MMM-MotionDetector: score ' + score;
                 Log.info(info);
                 console.info(info);
