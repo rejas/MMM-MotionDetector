@@ -1,3 +1,6 @@
+/* global Log */
+
+// eslint-disable-next-line
 var DiffCamEngine = (function() {
     var stream;					// stream obtained from webcam
     var video;					// shows stream
@@ -24,6 +27,8 @@ var DiffCamEngine = (function() {
     var scoreThreshold;			// min for an image to be considered significant
     var includeMotionBox;		// flag to calculate and draw motion bounding box
     var includeMotionPixels;	// flag to create object denoting pixels with motion
+
+	var coords;
 
     function init(options) {
         // sanity check
@@ -199,7 +204,7 @@ var DiffCamEngine = (function() {
                 }
 
                 if (includeMotionPixels) {
-                    motionPixels = calculateMotionPixels(motionPixels, coords.x, coords.y, pixelDiff);
+                    motionPixels = calculateMotionPixels(motionPixels, coords.x, coords.y);
                 }
             }
         }
@@ -233,7 +238,7 @@ var DiffCamEngine = (function() {
         return motionBox;
     }
 
-    function calculateMotionPixels(motionPixels, x, y, pixelDiff) {
+    function calculateMotionPixels(motionPixels, x, y) {
         motionPixels[x] = motionPixels[x] || [];
         motionPixels[x][y] = true;
 
