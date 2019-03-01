@@ -1,6 +1,7 @@
 /* global Log */
 
-var DiffCamEngine = (function() {  // eslint-disable-line
+// eslint-disable-next-line
+var DiffCamEngine = (function() {
     var stream;					// stream obtained from webcam
     var video;					// shows stream
     var captureCanvas;			// internal canvas for capturing full images from video
@@ -203,7 +204,7 @@ var DiffCamEngine = (function() {  // eslint-disable-line
                 }
 
                 if (includeMotionPixels) {
-                    motionPixels = calculateMotionPixels(motionPixels, coords.x, coords.y, pixelDiff);
+                    motionPixels = calculateMotionPixels(motionPixels, coords.x, coords.y);
                 }
             }
         }
@@ -237,7 +238,7 @@ var DiffCamEngine = (function() {  // eslint-disable-line
         return motionBox;
     }
 
-    function calculateMotionPixels(motionPixels, x, y, pixelDiff) { // eslint-disable-line
+    function calculateMotionPixels(motionPixels, x, y) {
         motionPixels[x] = motionPixels[x] || [];
         motionPixels[x][y] = true;
 
