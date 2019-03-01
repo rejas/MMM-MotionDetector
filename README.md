@@ -19,28 +19,48 @@ var config = {
     	address : '0.0.0.0',
 ``` 
 
-## Configuration
+## Using the module
 
-|Option|Description|
-|---|---|
-|`captureIntervalTime`|Time in ms between capturing images for detection<br>**Type:** `integer`|
-|`scoreThreshold`|Threshold minimum for an image to be considered significant<br>**Type:** `integer`|
-|`timeout`|Time in ms after which monitor is turned off when no motion is detected<br>**Type:** `integer`|
+To use this module, add it to the modules array in the `config/config.js` file:
+````javascript
+modules: [
+	{
+		module: "MMM-MotionDetector",
+		position: "top_left",	// Optional. This can be any of the regions. Displays debug informations.
+		config: {
+			// The config property is optional.
+			// See 'Configuration options' for more information.
+		}
+	}
+]
+````
 
-Example for the `config.js`:
+## Configuration options
 
-``` JavaScript
-{
-        module: 'MMM-MotionDetector',
-        config: {
-                captureIntervalTime: 5000,
-                scoreThreshold: 200,
-                timeout: 60000
-        }
+The following properties can be configured:
+
+| Option                       | Description
+| ---------------------------- | -----------
+| `captureIntervalTime`        | Time in ms between capturing images for detection<br><br>**Default value:** `1000`|
+| `scoreThreshold`             | Threshold minimum for an image to be considered significant<br><br>**Default value:** `20`|
+| `timeout`                    | Time in ms after which monitor is turned off when no motion is detected<br><br>**Default value:** `120000`|
+
+#### Default value:
+
+````javascript
+config: {
+    captureIntervalTime: 1000,
+    scoreThreshold: 20,
+    timeout: 120000
 }
-```
+````
 
 ## Changelog
+
+### [1.2.0] - 2019-03-01
+
+- Add DOM for displaying basic debug information on the MagicMirror when a position is specified
+- Updated documentation
 
 ### [1.1.0] - 2018-11-01
 
