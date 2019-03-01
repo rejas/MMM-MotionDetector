@@ -87,6 +87,7 @@ Module.register('MMM-MotionDetector',{
                     }
                 }
                 _this.lastScoreDetected = score;
+                _this.updateDom();
                 const info = 'MMM-MotionDetector: score ' + score;
                 Log.info(info);
                 console.info(info);
