@@ -59,10 +59,12 @@ Module.register('MMM-MotionDetector',{
             captureIntervalTime: _this.config.captureIntervalTime,
             motionCanvas: canvas,
             initSuccessCallback: function () {
+                const warning = 'MMM-MotionDetector: diffcam init successfull';
+                Log.info(warning);
                 DiffCamEngine.start();
             },
             initErrorCallback: function () {
-                const warning = 'MMM-MotionDetector: error init cam engine';
+                const warning = 'MMM-MotionDetector: diffcam init failed';
                 Log.warn(warning);
                 console.log(warning);
             },
