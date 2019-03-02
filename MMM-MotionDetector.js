@@ -45,7 +45,7 @@ Module.register('MMM-MotionDetector',{
         this.lastTimeMotionDetected = new Date();
 
         // make sure that the monitor is on when starting
-        this.sendSocketNotification('MOTION_DETECTED', 0);
+        this.sendSocketNotification('MOTION_DETECTED', { score: 0 });
 
         let _this = this;
         let canvas = document.createElement('canvas');
@@ -72,7 +72,7 @@ Module.register('MMM-MotionDetector',{
                 if (score > _this.config.scoreThreshold) {
                     _this.lastTimeMotionDetected = new Date();
                     if (_this.poweredOff) {
-                        _this.sendSocketNotification('MOTION_DETECTED', score);
+                        _this.sendSocketNotification('MOTION_DETECTED', payload);
                         _this.poweredOff = false;
                     }
                 }
@@ -87,8 +87,7 @@ Module.register('MMM-MotionDetector',{
                 }
                 _this.lastScoreDetected = score;
                 _this.updateDom();
-                const info = 'MMM-MotionDetector: score ' + score;
-                Log.info(info);
+                Log.info('MMM-MotionDetector: score ' + score);
             }
         });
     }
