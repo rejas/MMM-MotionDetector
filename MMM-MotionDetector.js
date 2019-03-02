@@ -60,14 +60,12 @@ Module.register('MMM-MotionDetector',{
             captureIntervalTime: _this.config.captureIntervalTime,
             motionCanvas: canvas,
             initSuccessCallback: function () {
-                const warning = 'MMM-MotionDetector: DiffCamEngine init successful';
-                Log.info(warning);
+                Log.info('MMM-MotionDetector: DiffCamEngine init successful');
                 DiffCamEngine.start();
             },
-            initErrorCallback: function () {
-                const warning = 'MMM-MotionDetector: DiffCamEngine init failed';
-                Log.warn(warning);
-                console.log(warning);
+            initErrorCallback: function (error) {
+                Log.error('MMM-MotionDetector: DiffCamEngine init failed, error:');
+                Log.error(error);
             },
             captureCallback: function(payload) {
                 const score = payload.score;
@@ -91,7 +89,6 @@ Module.register('MMM-MotionDetector',{
                 _this.updateDom();
                 const info = 'MMM-MotionDetector: score ' + score;
                 Log.info(info);
-                console.info(info);
             }
         });
     }

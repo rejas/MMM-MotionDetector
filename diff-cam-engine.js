@@ -1,5 +1,3 @@
-/* global Log */
-
 // eslint-disable-next-line
 var DiffCamEngine = (function() {
     var stream;					// stream obtained from webcam
@@ -110,8 +108,7 @@ var DiffCamEngine = (function() {
     }
 
     function initError(error) {
-        Log.error(error);
-        initErrorCallback();
+        initErrorCallback(error);
     }
 
     function start() {
