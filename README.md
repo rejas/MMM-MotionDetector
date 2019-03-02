@@ -69,3 +69,9 @@ config: {
 ### [1.0.0] - 2018-07-20
 
 - Initial release
+
+## Acknowledgements
+
+Many thanks to 
+- [alexyak](https://github.com/alexyak/motiondetector) for the original module code
+- [lonekorean](https://github.com/lonekorean/diff-cam-engine/) for the diffcam engine code.
