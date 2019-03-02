@@ -57,14 +57,18 @@ config: {
 
 ## Changelog
 
+### [1.2.1] - 2019-03-02
+
+- Added eslint codestyles
+
 ### [1.2.0] - 2019-03-01
 
-- Add DOM for displaying basic debug information on the MagicMirror when a position is specified
+- Added DOM for displaying basic debug information on the MagicMirror when a position is specified
 - Updated documentation
 
 ### [1.1.0] - 2018-11-01
 
-- Switch from tvservice to vgcencmd. Module can now be used with vc4-kms-v3d and vc4-fkms-v3d drivers.
+- Switched from tvservice to vgcencmd. Module can now be used with vc4-kms-v3d and vc4-fkms-v3d drivers.
 
 ### [1.0.0] - 2018-07-20
 
