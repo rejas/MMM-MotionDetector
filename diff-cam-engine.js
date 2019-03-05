@@ -1,32 +1,32 @@
 // eslint-disable-next-line
-var DiffCamEngine = (function() {
-    var stream;					// stream obtained from webcam
-    var video;					// shows stream
-    var captureCanvas;			// internal canvas for capturing full images from video
-    var captureContext;			// context for capture canvas
-    var diffCanvas;				// internal canvas for diffing downscaled captures
-    var diffContext;			// context for diff canvas
-    var motionCanvas;			// receives processed diff images
-    var motionContext;			// context for motion canvas
+const DiffCamEngine = (function() {
+    let stream;					// stream obtained from webcam
+    let video;					// shows stream
+    let captureCanvas;			// internal canvas for capturing full images from video
+    let captureContext;			// context for capture canvas
+    let diffCanvas;				// internal canvas for diffing downscaled captures
+    let diffContext;			// context for diff canvas
+    let motionCanvas;			// receives processed diff images
+    let motionContext;			// context for motion canvas
 
-    var initSuccessCallback;	// called when init succeeds
-    var initErrorCallback;		// called when init fails
-    var startCompleteCallback;	// called when start is complete
-    var captureCallback;		// called when an image has been captured and diffed
+    let initSuccessCallback;	// called when init succeeds
+    let initErrorCallback;		// called when init fails
+    let startCompleteCallback;	// called when start is complete
+    let captureCallback;		// called when an image has been captured and diffed
 
-    var captureInterval;		// interval for continuous captures
-    var captureIntervalTime;	// time between captures, in ms
-    var captureWidth;			// full captured image width
-    var captureHeight;			// full captured image height
-    var diffWidth;				// downscaled width for diff/motion
-    var diffHeight;				// downscaled height for diff/motion
-    var isReadyToDiff;			// has a previous capture been made to diff against?
-    var pixelDiffThreshold;		// min for a pixel to be considered significant
-    var scoreThreshold;			// min for an image to be considered significant
-    var includeMotionBox;		// flag to calculate and draw motion bounding box
-    var includeMotionPixels;	// flag to create object denoting pixels with motion
+    let captureInterval;		// interval for continuous captures
+    let captureIntervalTime;	// time between captures, in ms
+    let captureWidth;			// full captured image width
+    let captureHeight;			// full captured image height
+    let diffWidth;				// downscaled width for diff/motion
+    let diffHeight;				// downscaled height for diff/motion
+    let isReadyToDiff;			// has a previous capture been made to diff against?
+    let pixelDiffThreshold;		// min for a pixel to be considered significant
+    let scoreThreshold;			// min for an image to be considered significant
+    let includeMotionBox;		// flag to calculate and draw motion bounding box
+    let includeMotionPixels;	// flag to create object denoting pixels with motion
 
-	var coords;
+    let coords;
 
     function init(options) {
         // sanity check
@@ -137,15 +137,15 @@ var DiffCamEngine = (function() {
     function capture() {
         // save a full-sized copy of capture
         captureContext.drawImage(video, 0, 0, captureWidth, captureHeight);
-        var captureImageData = captureContext.getImageData(0, 0, captureWidth, captureHeight);
+        const captureImageData = captureContext.getImageData(0, 0, captureWidth, captureHeight);
 
         // diff current capture over previous capture, leftover from last time
         diffContext.globalCompositeOperation = 'difference';
         diffContext.drawImage(video, 0, 0, diffWidth, diffHeight);
-        var diffImageData = diffContext.getImageData(0, 0, diffWidth, diffHeight);
+        const diffImageData = diffContext.getImageData(0, 0, diffWidth, diffHeight);
 
         if (isReadyToDiff) {
-            var diff = processDiff(diffImageData);
+            const diff = processDiff(diffImageData);
 
             motionContext.putImageData(diffImageData, 0, 0);
             if (diff.motionBox) {
@@ -179,15 +179,15 @@ var DiffCamEngine = (function() {
     }
 
     function processDiff(diffImageData) {
-        var rgba = diffImageData.data;
+        const rgba = diffImageData.data;
 
         // pixel adjustments are done by reference directly on diffImageData
         let score = 0;
         let motionPixels = includeMotionPixels ? [] : undefined;
         let motionBox = undefined;
         for (let i = 0; i < rgba.length; i += 4) {
-            var pixelDiff = rgba[i] * 0.3 + rgba[i + 1] * 0.6 + rgba[i + 2] * 0.1;
-            var normalized = Math.min(255, pixelDiff * (255 / pixelDiffThreshold));
+            const pixelDiff = rgba[i] * 0.3 + rgba[i + 1] * 0.6 + rgba[i + 2] * 0.1;
+            const normalized = Math.min(255, pixelDiff * (255 / pixelDiffThreshold));
             rgba[i] = 0;
             rgba[i + 1] = normalized;
             rgba[i + 2] = 0;
