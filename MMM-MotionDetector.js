@@ -1,6 +1,3 @@
-/* global DiffCamEngine, Log, Module */
-"use strict";
-
 Module.register("MMM-MotionDetector",{
 
 	defaults: {

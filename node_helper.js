@@ -1,4 +1,3 @@
-"use strict";
 const NodeHelper = require("node_helper");
 const exec = require("child_process").exec;
 
