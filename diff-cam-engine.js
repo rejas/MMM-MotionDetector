@@ -1,4 +1,3 @@
-// eslint-disable-next-line
 const DiffCamEngine = (function() {
 	let stream;					// stream obtained from webcam
 	let video;					// shows stream

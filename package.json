@@ -6,7 +6,8 @@
   "homepage": "https://github.com/rejas/MMM-MotionDetector#readme",
   "license": "MIT",
   "scripts": {
-    "test": "eslint --fix *.js"
+    "lint": "eslint --fix **/*.js",
+    "test": "eslint **/*.js"
   },
   "repository": {
     "type": "git",
