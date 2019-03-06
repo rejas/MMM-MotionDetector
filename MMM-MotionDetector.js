@@ -18,6 +18,7 @@ Module.register("MMM-MotionDetector",{
 		headline.innerHTML = "MMM-MotionDetector";
 		wrapper.appendChild(headline);
 		let saved = document.createElement("p");
+		console.log(this.poweredOffTime);
 		saved.innerHTML = "time spend powered off: " + this.poweredOffTime;
 		wrapper.appendChild(saved);
 		let score = document.createElement("p");
@@ -75,9 +76,11 @@ Module.register("MMM-MotionDetector",{
 				const currentDate = new Date();
 				if (score > _this.config.scoreThreshold) {
 					if (_this.poweredOff) {
-						_this.poweredOffTime += (currentDate.getTime() - _this.lastTimePoweredOff);
+						console.log(_this.poweredOffTime);
+						_this.poweredOffTime = _this.poweredOffTime + (currentDate.getTime() - _this.lastTimePoweredOff);
 						_this.sendSocketNotification("MOTION_DETECTED", score);
 						_this.poweredOff = false;
+						console.log(_this.poweredOffTime);
 					}
 					_this.lastTimeMotionDetected = currentDate.getTime();
 				}
