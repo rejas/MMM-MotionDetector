@@ -79,14 +79,14 @@ Module.register("MMM-MotionDetector",{
 						_this.sendSocketNotification("MOTION_DETECTED", score);
 						_this.poweredOff = false;
 					}
-					_this.lastTimeMotionDetected = current;
+					_this.lastTimeMotionDetected = currentDate.getTime();
 				}
 				else {
 					const time = currentDate.getTime() - _this.lastTimeMotionDetected;
 					if ((time > _this.config.timeout) && (!_this.poweredOff)) {
 						_this.sendSocketNotification("DEACTIVATE_MONITOR", _this.config);
 						_this.sendNotification("DEACTIVATE_MONITOR", _this.config);
-						_this.lastTimePoweredOff = currentDate.getTime();
+						_this.lastTimePoweredOff = currentDate;
 						_this.poweredOff = true;
 					}
 				}
