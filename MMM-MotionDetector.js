@@ -15,18 +15,22 @@ Module.register("MMM-MotionDetector",{
 
 	getDom: function () {
 		let wrapper = document.createElement("div");
-		let headline = document.createElement("h3");
+		let headline = document.createElement("div");
+		headline.className = "light small dimmed";
 		headline.innerHTML = "MMM-MotionDetector";
 		wrapper.appendChild(headline);
-		let saved = document.createElement("p");
+		let saved = document.createElement("div");
+		saved.className = "light small normal";
 		const percentagePoweredOff = (100 * this.poweredOffTime / (new Date() - this.timeStarted)).toFixed(2);
 		const duration = moment.duration(this.poweredOffTime);
 		saved.innerHTML = "powered off: " + duration.humanize() + ", " + percentagePoweredOff + " %";
 		wrapper.appendChild(saved);
-		let score = document.createElement("p");
+		let score = document.createElement("div");
+		score.className = "light small normal";
 		score.innerHTML = "last score detected: " + this.lastScoreDetected;
 		wrapper.appendChild(score);
-		let time = document.createElement("p");
+		let time = document.createElement("div");
+		time.className = "light small normal";
 		time.innerHTML = "last time motion detected: " + this.lastTimeMotionDetected.toLocaleTimeString();
 		wrapper.appendChild(time);
 		return wrapper;
@@ -48,9 +52,6 @@ Module.register("MMM-MotionDetector",{
 
 	start: function() {
 		Log.info("MMM-MotionDetector: starting up");
-
-		// Set locale.
-		moment.locale(config.language);
 
 		this.lastScoreDetected = 0;
 		this.lastTimeMotionDetected = new Date();
