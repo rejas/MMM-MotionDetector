@@ -13,10 +13,10 @@ Module.register("MMM-MotionDetector",{
 	getDom: function () {
 		let wrapper = document.createElement("div");
 		let headline = document.createElement("h3");
-		headline.innerHTML = "MMM-Motion";
+		headline.innerHTML = "MMM-MotionDetector";
 		wrapper.appendChild(headline);
 		let score = document.createElement("p");
-		score.innerHTML = "last score: " + this.lastScoreDetected;
+		score.innerHTML = "last score detected: " + this.lastScoreDetected;
 		wrapper.appendChild(score);
 		let time = document.createElement("p");
 		time.innerHTML = "last time motion detected: " + this.lastTimeMotionDetected.toLocaleTimeString();
