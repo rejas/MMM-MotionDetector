@@ -75,10 +75,7 @@ const DiffCamEngine = (function() {
 		motionCanvas.height = diffHeight;
 		motionContext = motionCanvas.getContext("2d");
 
-		requestWebcam();
-	}
-
-	function requestWebcam() {
+		// requestWebcam
 		(navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia).call(
 			navigator,
 			{video: true},
@@ -92,22 +89,14 @@ const DiffCamEngine = (function() {
 					} else {
 						video.src = vendorURL.createObjectURL(localMediaStream);
 					}
-					initSuccess(localMediaStream);
+					stream = localMediaStream;
+					initSuccessCallback();
 				}
 			},
 			function(error) {
-				initError(error);
+				initErrorCallback(error);
 			}
 		);
-	}
-
-	function initSuccess(requestedStream) {
-		stream = requestedStream;
-		initSuccessCallback();
-	}
-
-	function initError(error) {
-		initErrorCallback(error);
 	}
 
 	function start() {
