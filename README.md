@@ -19,6 +19,12 @@ var config = {
     	address : '0.0.0.0',
 ``` 
 
+## Tested devices
+
+So far I only used a [PlayStation3 Eye Webcam](https://en.wikipedia.org/wiki/PlayStation_Eye) for motion-detection at my MagicMirror. 
+If you have successfully used this module with any other webcam, I'd be happy to hear about it.
+
+
 ## Using the module
 
 To use this module, add it to the modules array in the `config/config.js` file:
