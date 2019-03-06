@@ -19,7 +19,7 @@ Module.register("MMM-MotionDetector",{
 		wrapper.appendChild(headline);
 		let saved = document.createElement("p");
 		console.log(this.poweredOffTime);
-		saved.innerHTML = "time spend powered off: " + this.poweredOffTime;
+		//saved.innerHTML = "time spend powered off: " + this.poweredOffTime;
 		wrapper.appendChild(saved);
 		let score = document.createElement("p");
 		score.innerHTML = "last score detected: " + this.lastScoreDetected;
@@ -76,11 +76,9 @@ Module.register("MMM-MotionDetector",{
 				const currentDate = new Date();
 				if (score > _this.config.scoreThreshold) {
 					if (_this.poweredOff) {
-						console.log(_this.poweredOffTime);
-						_this.poweredOffTime = _this.poweredOffTime + (currentDate.getTime() - _this.lastTimePoweredOff);
+						_this.poweredOffTime = _this.poweredOffTime + (currentDate.getTime() - _this.lastTimePoweredOff.getTime());
 						_this.sendSocketNotification("MOTION_DETECTED", score);
 						_this.poweredOff = false;
-						console.log(_this.poweredOffTime);
 					}
 					_this.lastTimeMotionDetected = currentDate.getTime();
 				}
@@ -96,6 +94,7 @@ Module.register("MMM-MotionDetector",{
 				_this.lastScoreDetected = score;
 				_this.updateDom();
 				Log.info("MMM-MotionDetector: score " + score);
+				Log.info("Time saved: " + _this.poweredOffTime);
 			}
 		});
 	}
