@@ -8,24 +8,29 @@ Module.register("MMM-MotionDetector",{
 
 	lastScoreDetected: null,
 	lastTimeMotionDetected: null,
+	lastTimePoweredOff: null,
 	poweredOff: false,
+	poweredOffTime: 0,
+	timeStarted: null,
 
-	getDom: function () {
-		let wrapper = document.createElement("div");
-		let headline = document.createElement("h3");
-		headline.innerHTML = "MMM-Motion";
-		wrapper.appendChild(headline);
-		let score = document.createElement("p");
-		score.innerHTML = "last score: " + this.lastScoreDetected;
-		wrapper.appendChild(score);
-		let time = document.createElement("p");
-		time.innerHTML = "last time motion detected: " + this.lastTimeMotionDetected.toLocaleTimeString();
-		wrapper.appendChild(time);
-		return wrapper;
+	getScripts: function () {
+		return [
+			"moment.js",
+			"diff-cam-engine.js"
+		];
 	},
 
-	getScripts: function() {
-		return ["diff-cam-engine.js"];
+	getTemplate: function () {
+		return "MMM-MotionDetector.njk"
+	},
+
+	getTemplateData: function () {
+		return {
+			duration: moment.duration(this.poweredOffTime).humanize(),
+			lastScoreDetected: this.lastScoreDetected,
+			lastTimeMotionDetected: this.lastTimeMotionDetected.toLocaleTimeString(),
+			percentagePoweredOff: (100 * this.poweredOffTime / (new Date() - this.timeStarted)).toFixed(2)
+		}
 	},
 
 	// Override socket notification handler.
@@ -40,6 +45,8 @@ Module.register("MMM-MotionDetector",{
 
 		this.lastScoreDetected = 0;
 		this.lastTimeMotionDetected = new Date();
+		this.lastTimePoweredOff = new Date();
+		this.timeStarted = new Date();
 
 		// make sure that the monitor is on when starting
 		this.sendSocketNotification("MOTION_DETECTED", 0);
@@ -61,30 +68,30 @@ Module.register("MMM-MotionDetector",{
 				DiffCamEngine.start();
 			},
 			initErrorCallback: function (error) {
-				Log.error("MMM-MotionDetector: DiffCamEngine init failed, error:");
-				Log.error(error);
+				Log.error("MMM-MotionDetector: DiffCamEngine init failed. " + error);
 			},
 			captureCallback: function(payload) {
 				const score = payload.score;
+				const currentDate = new Date();
 				if (score > _this.config.scoreThreshold) {
-					_this.lastTimeMotionDetected = new Date();
 					if (_this.poweredOff) {
+						_this.poweredOffTime = _this.poweredOffTime + (currentDate.getTime() - _this.lastTimePoweredOff.getTime());
 						_this.sendSocketNotification("MOTION_DETECTED", score);
 						_this.poweredOff = false;
 					}
+					_this.lastTimeMotionDetected = currentDate;
 				}
 				else {
-					const currentDate = new Date(),
-						time = currentDate.getTime() - _this.lastTimeMotionDetected;
+					const time = currentDate.getTime() - _this.lastTimeMotionDetected.getTime();
 					if ((time > _this.config.timeout) && (!_this.poweredOff)) {
 						_this.sendSocketNotification("DEACTIVATE_MONITOR", _this.config);
 						_this.sendNotification("DEACTIVATE_MONITOR", _this.config);
+						_this.lastTimePoweredOff = currentDate;
 						_this.poweredOff = true;
 					}
 				}
 				_this.lastScoreDetected = score;
 				_this.updateDom();
-				Log.info("MMM-MotionDetector: score " + score);
 			}
 		});
 	}
