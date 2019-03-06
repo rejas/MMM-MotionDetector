@@ -8,13 +8,18 @@ Module.register("MMM-MotionDetector",{
 
 	lastScoreDetected: null,
 	lastTimeMotionDetected: null,
+	lastTimePoweredOff: null,
 	poweredOff: false,
+	poweredOffTime: 0,
 
 	getDom: function () {
 		let wrapper = document.createElement("div");
 		let headline = document.createElement("h3");
 		headline.innerHTML = "MMM-MotionDetector";
 		wrapper.appendChild(headline);
+		let saved = document.createElement("p");
+		saved.innerHTML = "time spend powered off: " + this.poweredOffTime;
+		wrapper.appendChild(saved);
 		let score = document.createElement("p");
 		score.innerHTML = "last score detected: " + this.lastScoreDetected;
 		wrapper.appendChild(score);
@@ -40,6 +45,7 @@ Module.register("MMM-MotionDetector",{
 
 		this.lastScoreDetected = 0;
 		this.lastTimeMotionDetected = new Date();
+		this.lastTimePoweredOff = new Date();
 
 		// make sure that the monitor is on when starting
 		this.sendSocketNotification("MOTION_DETECTED", 0);
@@ -66,19 +72,21 @@ Module.register("MMM-MotionDetector",{
 			},
 			captureCallback: function(payload) {
 				const score = payload.score;
+				const currentDate = new Date();
 				if (score > _this.config.scoreThreshold) {
-					_this.lastTimeMotionDetected = new Date();
 					if (_this.poweredOff) {
+						_this.poweredOffTime += (currentDate.getTime() - _this.lastTimePoweredOff);
 						_this.sendSocketNotification("MOTION_DETECTED", score);
 						_this.poweredOff = false;
 					}
+					_this.lastTimeMotionDetected = current;
 				}
 				else {
-					const currentDate = new Date(),
-						time = currentDate.getTime() - _this.lastTimeMotionDetected;
+					const time = currentDate.getTime() - _this.lastTimeMotionDetected;
 					if ((time > _this.config.timeout) && (!_this.poweredOff)) {
 						_this.sendSocketNotification("DEACTIVATE_MONITOR", _this.config);
 						_this.sendNotification("DEACTIVATE_MONITOR", _this.config);
+						_this.lastTimePoweredOff = currentDate.getTime();
 						_this.poweredOff = true;
 					}
 				}
