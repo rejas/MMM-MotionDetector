@@ -13,34 +13,24 @@ Module.register("MMM-MotionDetector",{
 	poweredOffTime: 0,
 	timeStarted: null,
 
-	getDom: function () {
-		let wrapper = document.createElement("div");
-		let headline = document.createElement("div");
-		headline.className = "light small dimmed";
-		headline.innerHTML = "MMM-MotionDetector";
-		wrapper.appendChild(headline);
-		let saved = document.createElement("div");
-		saved.className = "light small normal";
-		const percentagePoweredOff = (100 * this.poweredOffTime / (new Date() - this.timeStarted)).toFixed(2);
-		const duration = moment.duration(this.poweredOffTime);
-		saved.innerHTML = "powered off: " + duration.humanize() + ", " + percentagePoweredOff + " %";
-		wrapper.appendChild(saved);
-		let score = document.createElement("div");
-		score.className = "light small normal";
-		score.innerHTML = "last score detected: " + this.lastScoreDetected;
-		wrapper.appendChild(score);
-		let time = document.createElement("div");
-		time.className = "light small normal";
-		time.innerHTML = "last time motion detected: " + this.lastTimeMotionDetected.toLocaleTimeString();
-		wrapper.appendChild(time);
-		return wrapper;
-	},
-
 	getScripts: function () {
 		return [
 			"moment.js",
 			"diff-cam-engine.js"
 		];
+	},
+
+	getTemplate: function () {
+		return "MMM-MotionDetector.njk"
+	},
+
+	getTemplateData: function () {
+		return {
+			duration: moment.duration(this.poweredOffTime).humanize(),
+			lastScoreDetected: this.lastScoreDetected,
+			lastTimeMotionDetected: this.lastTimeMotionDetected.toLocaleTimeString(),
+			percentagePoweredOff: (100 * this.poweredOffTime / (new Date() - this.timeStarted)).toFixed(2)
+		}
 	},
 
 	// Override socket notification handler.
