@@ -18,13 +18,11 @@ Module.register("MMM-MotionDetector",{
 		let headline = document.createElement("h3");
 		headline.innerHTML = "MMM-MotionDetector";
 		wrapper.appendChild(headline);
-
 		let saved = document.createElement("p");
 		const percentagePoweredOff = (100 * this.poweredOffTime / (new Date() - this.timeStarted)).toFixed(2);
 		const duration = moment.duration(this.poweredOffTime);
 		saved.innerHTML = "powered off: " + duration.humanize() + ", " + percentagePoweredOff + " %";
 		wrapper.appendChild(saved);
-
 		let score = document.createElement("p");
 		score.innerHTML = "last score detected: " + this.lastScoreDetected;
 		wrapper.appendChild(score);
@@ -104,8 +102,6 @@ Module.register("MMM-MotionDetector",{
 				}
 				_this.lastScoreDetected = score;
 				_this.updateDom();
-				Log.info("MMM-MotionDetector: score " + score);
-				Log.info("Time saved: " + _this.poweredOffTime);
 			}
 		});
 	}
