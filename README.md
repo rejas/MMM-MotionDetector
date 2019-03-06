@@ -57,6 +57,11 @@ config: {
 
 ## Changelog
 
+### [1.2.2] - 2019-03-06
+
+- Switched to MM² codestyle
+- Cleaned up code
+
 ### [1.2.1] - 2019-03-02
 
 - Added eslint codestyles
