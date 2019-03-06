@@ -11,16 +11,20 @@ Module.register("MMM-MotionDetector",{
 	lastTimePoweredOff: null,
 	poweredOff: false,
 	poweredOffTime: 0,
+	timeStarted: null,
 
 	getDom: function () {
 		let wrapper = document.createElement("div");
 		let headline = document.createElement("h3");
 		headline.innerHTML = "MMM-MotionDetector";
 		wrapper.appendChild(headline);
+
 		let saved = document.createElement("p");
-		console.log(this.poweredOffTime);
-		//saved.innerHTML = "time spend powered off: " + this.poweredOffTime;
+		const percentagePoweredOff = (100 * this.poweredOffTime / (new Date() - this.timeStarted)).toFixed(2);
+		const duration = moment.duration(this.poweredOffTime);
+		saved.innerHTML = "powered off: " + duration.humanize() + ", " + percentagePoweredOff + " %";
 		wrapper.appendChild(saved);
+
 		let score = document.createElement("p");
 		score.innerHTML = "last score detected: " + this.lastScoreDetected;
 		wrapper.appendChild(score);
@@ -30,8 +34,11 @@ Module.register("MMM-MotionDetector",{
 		return wrapper;
 	},
 
-	getScripts: function() {
-		return ["diff-cam-engine.js"];
+	getScripts: function () {
+		return [
+			"moment.js",
+			"diff-cam-engine.js"
+		];
 	},
 
 	// Override socket notification handler.
@@ -44,9 +51,13 @@ Module.register("MMM-MotionDetector",{
 	start: function() {
 		Log.info("MMM-MotionDetector: starting up");
 
+		// Set locale.
+		moment.locale(config.language);
+
 		this.lastScoreDetected = 0;
 		this.lastTimeMotionDetected = new Date();
 		this.lastTimePoweredOff = new Date();
+		this.timeStarted = new Date();
 
 		// make sure that the monitor is on when starting
 		this.sendSocketNotification("MOTION_DETECTED", 0);
@@ -80,10 +91,10 @@ Module.register("MMM-MotionDetector",{
 						_this.sendSocketNotification("MOTION_DETECTED", score);
 						_this.poweredOff = false;
 					}
-					_this.lastTimeMotionDetected = currentDate.getTime();
+					_this.lastTimeMotionDetected = currentDate;
 				}
 				else {
-					const time = currentDate.getTime() - _this.lastTimeMotionDetected;
+					const time = currentDate.getTime() - _this.lastTimeMotionDetected.getTime();
 					if ((time > _this.config.timeout) && (!_this.poweredOff)) {
 						_this.sendSocketNotification("DEACTIVATE_MONITOR", _this.config);
 						_this.sendNotification("DEACTIVATE_MONITOR", _this.config);
