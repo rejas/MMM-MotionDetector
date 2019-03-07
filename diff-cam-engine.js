@@ -102,7 +102,7 @@ const DiffCamEngine = (function() {
 			}
 		}
 
-		// requestWebcam
+		// request webcam
 		navigator.mediaDevices.getUserMedia({ video: true })
 			.then(function(localMediaStream) {
 				// Older browsers may not have srcObject
@@ -125,11 +125,12 @@ const DiffCamEngine = (function() {
 			throw "Cannot start after init fail";
 		}
 
-		video.addEventListener("loadedmetadata", startComplete);
+		// streaming takes a moment to start
+		video.addEventListener("canplay", startComplete);
 	}
 
 	function startComplete() {
-		video.removeEventListener("loadedmetadata", startComplete);
+		video.removeEventListener("canplay", startComplete);
 		captureInterval = setInterval(capture, captureIntervalTime);
 		startCompleteCallback();
 	}
