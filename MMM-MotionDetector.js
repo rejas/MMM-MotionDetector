@@ -13,6 +13,10 @@ Module.register("MMM-MotionDetector",{
 	poweredOffTime: 0,
 	timeStarted: null,
 
+	getHeader: function () {
+		return "MMM-MotionDetector";
+	},
+
 	getScripts: function () {
 		return [
 			"moment.js",
@@ -43,13 +47,16 @@ Module.register("MMM-MotionDetector",{
 	start: function() {
 		Log.info("MMM-MotionDetector: starting up");
 
+		// TODO remove once https://github.com/MichMich/MagicMirror/pull/1599 is merged and released
+		this.data.header = "MMM-MotionDetector";
+
 		this.lastScoreDetected = 0;
 		this.lastTimeMotionDetected = new Date();
 		this.lastTimePoweredOff = new Date();
 		this.timeStarted = new Date();
 
 		// make sure that the monitor is on when starting
-		this.sendSocketNotification("MOTION_DETECTED", 0);
+		this.sendSocketNotification("MOTION_DETECTED", {score: 0});
 
 		let _this = this;
 		let canvas = document.createElement("canvas");
@@ -76,7 +83,8 @@ Module.register("MMM-MotionDetector",{
 				if (score > _this.config.scoreThreshold) {
 					if (_this.poweredOff) {
 						_this.poweredOffTime = _this.poweredOffTime + (currentDate.getTime() - _this.lastTimePoweredOff.getTime());
-						_this.sendSocketNotification("MOTION_DETECTED", score);
+						_this.sendSocketNotification("MOTION_DETECTED", {score: score});
+						_this.sendNotification("MOTION_DETECTED",  {score: score});
 						_this.poweredOff = false;
 					}
 					_this.lastTimeMotionDetected = currentDate;
@@ -84,8 +92,8 @@ Module.register("MMM-MotionDetector",{
 				else {
 					const time = currentDate.getTime() - _this.lastTimeMotionDetected.getTime();
 					if ((time > _this.config.timeout) && (!_this.poweredOff)) {
-						_this.sendSocketNotification("DEACTIVATE_MONITOR", _this.config);
-						_this.sendNotification("DEACTIVATE_MONITOR", _this.config);
+						_this.sendSocketNotification("DEACTIVATE_MONITOR",  {timeSaved: _this.poweredOffTime});
+						_this.sendNotification("DEACTIVATE_MONITOR",  {timeSaved: _this.poweredOffTime});
 						_this.lastTimePoweredOff = currentDate;
 						_this.poweredOff = true;
 					}
