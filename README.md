@@ -63,6 +63,11 @@ config: {
 
 ## Changelog
 
+### [1.4.0] - 2019-03-08
+
+- Updated code to getUserMedia from browser
+- Cleaned up DOM template
+
 ### [1.3.0] - 2019-03-06
 
 - Added time/percentage powered-off to DOM
