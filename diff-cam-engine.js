@@ -87,7 +87,7 @@ const DiffCamEngine = (function() {
 			navigator.mediaDevices.getUserMedia = function(constraints) {
 
 				// First get a hold of the legacy getUserMedia, if present
-				var getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+				const getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 
 				// Some browsers just don't implement it - return a rejected promise with an error
 				// to keep a consistent interface

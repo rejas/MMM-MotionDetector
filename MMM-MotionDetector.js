@@ -1,4 +1,4 @@
-Module.register("MMM-MotionDetector",{
+Module.register("MMM-MotionDetector", {
 
 	defaults: {
 		captureIntervalTime: 1000, // 1 second
@@ -84,16 +84,15 @@ Module.register("MMM-MotionDetector",{
 					if (_this.poweredOff) {
 						_this.poweredOffTime = _this.poweredOffTime + (currentDate.getTime() - _this.lastTimePoweredOff.getTime());
 						_this.sendSocketNotification("MOTION_DETECTED", {score: score});
-						_this.sendNotification("MOTION_DETECTED",  {score: score});
+						_this.sendNotification("MOTION_DETECTED", {score: score});
 						_this.poweredOff = false;
 					}
 					_this.lastTimeMotionDetected = currentDate;
-				}
-				else {
+				} else {
 					const time = currentDate.getTime() - _this.lastTimeMotionDetected.getTime();
 					if ((time > _this.config.timeout) && (!_this.poweredOff)) {
-						_this.sendSocketNotification("DEACTIVATE_MONITOR",  {timeSaved: _this.poweredOffTime});
-						_this.sendNotification("DEACTIVATE_MONITOR",  {timeSaved: _this.poweredOffTime});
+						_this.sendSocketNotification("DEACTIVATE_MONITOR", {timeSaved: _this.poweredOffTime});
+						_this.sendNotification("DEACTIVATE_MONITOR", {timeSaved: _this.poweredOffTime});
 						_this.lastTimePoweredOff = currentDate;
 						_this.poweredOff = true;
 					}
