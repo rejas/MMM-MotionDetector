@@ -17,13 +17,21 @@ Just in case you still have problems (like [here](https://github.com/rejas/MMM-M
 ``` JavaScript
 var config = {
     	address : '0.0.0.0',
+	...
 ``` 
 
 ## Tested devices
 
-So far I only used a [PlayStation3 Eye Webcam](https://en.wikipedia.org/wiki/PlayStation_Eye) for motion-detection at my MagicMirror. 
-If you have successfully used this module with any other webcam, I'd be happy to hear about it.
+So far I only used a [PlayStation3 Eye Webcam](https://en.wikipedia.org/wiki/PlayStation_Eye) for motion-detection at my MagicMirror. If you have successfully used this module with any other webcam, I'd be happy to hear about it.
 
+If you want to use the wired PI-camera follow these steps provided by [@rev138](https://github.com/rejas/MMM-MotionDetector/issues/8#issuecomment-483356950):
+
+    - Open /etc/modules-load.d/modules.conf
+    - Add bcm2835-v4l2 to the end of the file and save it.
+    - Reboot.
+    - Profit
+
+Another tutorial on how to enable the PI-camera in the browser can be found [in this blog post](https://reprage.com/post/pi-camera-module-in-the-browser).
 
 ## Using the module
 
