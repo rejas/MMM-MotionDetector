@@ -69,6 +69,14 @@ config: {
 }
 ````
 
+## Notifications send
+
+| Notification          | Payload       | Description
+| --------------------- | ------------- | ------------
+| `MOTION_DETECTED`     | score         | score calculated by the diff-cam-engine, 0 or greater |
+| `DEACTIVATE_MONITOR`  | percentageOff | percentage of time the monitor was deactivated since the module started |
+
+
 ## Changelog
 
 ### [1.4.0] - 2019-03-08
