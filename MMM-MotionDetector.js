@@ -27,7 +27,7 @@ Module.register("MMM-MotionDetector", {
 	},
 
 	getTemplate: function () {
-		return "MMM-MotionDetector.njk"
+		return "MMM-MotionDetector.njk";
 	},
 
 	getTemplateData: function () {
@@ -37,13 +37,13 @@ Module.register("MMM-MotionDetector", {
 			lastTimeMotionDetected: this.lastTimeMotionDetected.toLocaleTimeString(),
 			percentagePoweredOff: this.percentagePoweredOff,
 			error: this.error
-		}
+		};
 	},
 
 	// Override socket notification handler.
 	socketNotificationReceived: function (notification, payload) {
 		if (notification === "USER_PRESENCE") {
-			this.sendNotification(notification, payload)
+			this.sendNotification(notification, payload);
 		}
 	},
 

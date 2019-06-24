@@ -24,6 +24,6 @@
     "url": "https://github.com/rejas/MMM-MotionDetector/issues"
   },
   "devDependencies": {
-    "eslint": "^5.15.3"
+    "eslint": "^6.0.0"
   }
 }

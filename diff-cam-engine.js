@@ -99,7 +99,7 @@ const DiffCamEngine = (function() {
 				return new Promise(function(resolve, reject) {
 					getUserMedia.call(navigator, constraints, resolve, reject);
 				});
-			}
+			};
 		}
 
 		// request webcam
@@ -175,7 +175,7 @@ const DiffCamEngine = (function() {
 					return getCaptureUrl(this.imageData);
 				},
 				checkMotionPixel: function(x, y) {
-					return checkMotionPixel(this.motionPixels, x, y)
+					return checkMotionPixel(this.motionPixels, x, y);
 				}
 			});
 		}
