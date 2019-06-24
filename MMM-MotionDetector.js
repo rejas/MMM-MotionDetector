@@ -13,6 +13,7 @@ Module.register("MMM-MotionDetector", {
 	poweredOff: false,
 	poweredOffTime: 0,
 	timeStarted: null,
+	error: null,
 
 	getHeader: function () {
 		return "MMM-MotionDetector";
@@ -34,7 +35,8 @@ Module.register("MMM-MotionDetector", {
 			duration: moment.duration(this.poweredOffTime).humanize(),
 			lastScoreDetected: this.lastScoreDetected,
 			lastTimeMotionDetected: this.lastTimeMotionDetected.toLocaleTimeString(),
-			percentagePoweredOff: this.percentagePoweredOff
+			percentagePoweredOff: this.percentagePoweredOff,
+			error: this.error
 		}
 	},
 
@@ -74,6 +76,8 @@ Module.register("MMM-MotionDetector", {
 			},
 			initErrorCallback: (error) => {
 				Log.error("MMM-MotionDetector: DiffCamEngine init failed. " + error);
+				this.error = error;
+				this.updateDom();
 			},
 			captureCallback: (payload) => {
 				const score = payload.score;

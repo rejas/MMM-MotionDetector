@@ -1,4 +1,8 @@
 <div class="align-left">
+{% if error %}
+    <div class="light small bold">{{error}}</div>
+{% else %}
     <div class="light small normal">motion detected at: <span class="bright">{{lastTimeMotionDetected}}</span> (score: <span class="bright">{{lastScoreDetected}}</span>)</div>
     <div class="light small normal">powered off: <span class="bright">{{duration}}</span> (<span class="bright">{{percentagePoweredOff}} %</span> of uptime)</div>
+{% endif %}
 </div>
