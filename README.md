@@ -79,6 +79,12 @@ config: {
 
 ## Changelog
 
+### [1.5.0] - 2019-07-14
+
+- Show error on UI element when something goes wrong during initialization
+- Cleaned up code
+- Update dependencies
+
 ### [1.4.0] - 2019-03-08
 
 - Updated code to getUserMedia from browser
