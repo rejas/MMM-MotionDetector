@@ -1,17 +1,15 @@
 {
   "name": "mmm-motiondetector",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "a motion detector module for MagicMirror",
   "author": "rejas@github.com",
-  "homepage": "https://github.com/rejas/MMM-MotionDetector#readme",
   "license": "MIT",
+  "bugs": "https://github.com/rejas/MMM-MotionDetector/issues",
+  "homepage": "https://github.com/rejas/MMM-MotionDetector#readme",
+  "repository": "github:rejas/MMM-MotionDetector.git",
   "scripts": {
     "lint": "eslint --fix **/*.js",
     "test": "eslint **/*.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/rejas/MMM-MotionDetector.git"
   },
   "keywords": [
     "magic",
@@ -20,10 +18,7 @@
     "mirror",
     "motion detection"
   ],
-  "bugs": {
-    "url": "https://github.com/rejas/MMM-MotionDetector/issues"
-  },
   "devDependencies": {
-    "eslint": "^6.0.0"
+    "eslint": "^6.0.1"
   }
 }
