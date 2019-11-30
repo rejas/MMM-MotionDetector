@@ -20,6 +20,55 @@ var config = {
 	...
 ``` 
 
+#### Configuring MotionDetector with another module that requires MagicMirror address to be 0.0.0.0
+
+You can do this by doing a simple workaround. You need to config the MagicMirror address to localhost (default) and set up a reverse proxy for the other module.
+
+As MagicMirror uses an express server, you can install http-proxy-middleware plugin for express. Then you need to create 2 files:
+
+routes.json
+``` JavaScript
+{
+  "routes": [
+    {
+      "route": "/mirror", // any path you like
+      "address": "http://localhost:8080" // adrress of MagicMirror
+    }
+  ]
+}
+``` 
+
+proxyserver.js
+``` JavaScript
+// Dependencies
+const express = require('express');
+const proxy = require('http-proxy-middleware');
+
+// Config
+const { routes } = require('./routes.json');
+
+const app = express();
+
+for (route of routes) {
+    app.use(route.route,
+        proxy({
+            target: route.address,
+            pathRewrite: (path, req) => {
+                return path.split('/').slice(2).join('/'); // Could use replace, but take care of the leading '/'
+            }
+        })
+    );
+}
+
+// Start server and listen on port 8081
+app.listen(8081, () => {});
+``` 
+Now just start the proxyserver e.g. with PM2 like you may run your MagicMirror.
+
+You can now call http://ipaddress:8081/mirror/modulename and it will be forwarded to http://localhost:8080/modulename.
+
+As you are bypassing browser security with this workaround you may want to add some credentials and/or ip-ranges which can access your proxyserver.
+
 ## Tested devices
 
 So far I only used a [PlayStation3 Eye Webcam](https://en.wikipedia.org/wiki/PlayStation_Eye) for motion-detection at my MagicMirror. If you have successfully used this module with any other webcam, I'd be happy to hear about it.
