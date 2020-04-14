@@ -34,15 +34,14 @@ module.exports = NodeHelper.create({
 
   /**
    *
-   * @param resultCallback
    */
   isMonitorOn: async () => {
     try {
       const out = await exec("vcgencmd display_power");
-      Log.info("MMM-MotionDetector: monitor status is " + out);
-      return out.includes("=1");
+      Log.info("MMM-MotionDetector: monitor " + JSON.stringify(result.stdout));
+      return result.stdout.includes("=1");
     } catch (error) {
-      Log.error("MMM-MotionDetector: error calling monitor status: " + code);
+      Log.error("MMM-MotionDetector: error calling monitor status: " + result.stderr);
       return false;
     }
   },
