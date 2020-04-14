@@ -9,7 +9,8 @@ module.exports = NodeHelper.create({
    */
   start: function () {
     const isMonitorOn = this.isMonitorOn();
-    Log.info("MMM-MotionDetector: monitor is " + (isMonitorOn ? "ON" : "OFF") + ".");
+    console.log(JSON.stringify(isMonitorOn));
+    console.log("MMM-MotionDetector: monitor is " + isMonitorOn);
   },
 
   /**
@@ -38,8 +39,9 @@ module.exports = NodeHelper.create({
   isMonitorOn: async () => {
     try {
       const result = await exec("vcgencmd display_power");
-      Log.info("MMM-MotionDetector: monitor " + JSON.stringify(result.stdout));
-      return result.stdout.includes("=1");
+      const isOn = result.stdout.includes("=1");
+      Log.info("MMM-MotionDetector: monitor is " + isOn ? "on" : "off");
+      return isOn;
     } catch (error) {
       Log.error("MMM-MotionDetector: error calling monitor status: " + error);
       return false;
@@ -51,26 +53,25 @@ module.exports = NodeHelper.create({
    * @param notification
    * @param payload
    */
-  // Subclass socketNotificationReceived received.
   socketNotificationReceived: function (notification, payload) {
     if (notification === "MOTION_DETECTED") {
-      console.log("MMM-MotionDetector: MOTION_DETECTED, score " + payload.score);
+      Log.info("MMM-MotionDetector: MOTION_DETECTED, score is " + payload.score);
       this.activateMonitor()
         .then(() => {
-          console.log("MMM-MotionDetector: monitor has been activated");
+          Log.info("MMM-MotionDetector: monitor has been activated");
         })
         .catch((error) => {
-          console.error("MMM-MotionDetector: error activating monitor: " + error);
+          Log.error("MMM-MotionDetector: error activating monitor: " + error);
         });
     }
     if (notification === "DEACTIVATE_MONITOR") {
-      console.log("MMM-MotionDetector: DEACTIVATE_MONITOR, percentage off: " + payload.percentageOff);
+      Log.info("MMM-MotionDetector: DEACTIVATE_MONITOR, percentage off: " + payload.percentageOff);
       this.deactivateMonitor()
         .then(() => {
-          console.log("MMM-MotionDetector: monitor has been deactivated");
+          Log.info("MMM-MotionDetector: monitor has been deactivated");
         })
         .catch((error) => {
-          console.error("MMM-MotionDetector: error deactivating monitor: " + error);
+          Log.error("MMM-MotionDetector: error deactivating monitor: " + error);
         });
     }
   },
