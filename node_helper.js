@@ -40,7 +40,7 @@ module.exports = NodeHelper.create({
     try {
       const result = await exec("vcgencmd display_power");
       const isOn = result.stdout.includes("=1");
-      Log.info("MMM-MotionDetector: monitor is " + isOn ? "on" : "off");
+      Log.info("MMM-MotionDetector: monitor is " + (isOn ? "on" : "off"));
       return isOn;
     } catch (error) {
       Log.error("MMM-MotionDetector: error calling monitor status: " + error);
