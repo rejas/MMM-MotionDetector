@@ -55,8 +55,8 @@ Module.register("MMM-MotionDetector", {
     this.lastTimePoweredOff = new Date();
     this.timeStarted = new Date().getTime();
 
-    // make sure that the monitor is on when starting
-    this.sendSocketNotification("ACTIVATE_MONITOR");
+	// make sure that the monitor is on when starting
+	this.sendSocketNotification("MOTION_DETECTED", { score: "initializing" });
 
     const canvas = document.createElement("canvas");
     const video = document.createElement("video");
