@@ -3,7 +3,6 @@ const exec = require("child_process").exec;
 
 module.exports = NodeHelper.create({
 	start: function () {
-		this.started = false;
 		this.isMonitorOn(function(result) {
 			console.log("MMM-MotionDetector: monitor on " + result);
 		});
@@ -21,7 +20,6 @@ module.exports = NodeHelper.create({
 				});
 			}
 		});
-		this.started = false;
 	},
 
 	deactivateMonitor: function () {
@@ -36,7 +34,6 @@ module.exports = NodeHelper.create({
 				});
 			}
 		});
-		this.started = false;
 	},
 
 	isMonitorOn: function(resultCallback) {
@@ -53,14 +50,12 @@ module.exports = NodeHelper.create({
 
 	// Subclass socketNotificationReceived received.
 	socketNotificationReceived: function (notification, payload) {
-		if (notification === "MOTION_DETECTED" && this.started === false) {
+		if (notification === "MOTION_DETECTED") {
 			console.log("MMM-MotionDetector: MOTION_DETECTED, score " + payload.score);
-			this.started = true;
 			this.activateMonitor();
 		}
-		if (notification === "DEACTIVATE_MONITOR" && this.started === false) {
+		if (notification === "DEACTIVATE_MONITOR") {
 			console.log("MMM-MotionDetector: DEACTIVATE_MONITOR, percentage off: " + payload.percentageOff);
-			this.started = true;
 			this.deactivateMonitor();
 		}
 	}
