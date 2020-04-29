@@ -1,3 +1,4 @@
+/* global Module, moment, Log, DiffCamEngine */
 Module.register("MMM-MotionDetector", {
 
 	defaults: {
