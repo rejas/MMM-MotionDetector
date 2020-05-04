@@ -48,7 +48,6 @@ module.exports = NodeHelper.create({
 		});
 	},
 
-	// Subclass socketNotificationReceived received.
 	socketNotificationReceived: function (notification, payload) {
 		if (notification === "MOTION_DETECTED") {
 			console.log("MMM-MotionDetector: MOTION_DETECTED, score " + payload.score);

@@ -58,7 +58,7 @@ Module.register("MMM-MotionDetector", {
 		this.timeStarted = new Date().getTime();
 
 		// make sure that the monitor is on when starting
-		this.sendSocketNotification("MOTION_DETECTED", {score: 0});
+		this.sendSocketNotification("MOTION_DETECTED", {score: "initialising!"});
 
 		const canvas = document.createElement("canvas");
 		const video = document.createElement("video");
@@ -72,7 +72,7 @@ Module.register("MMM-MotionDetector", {
 			captureIntervalTime: this.config.captureIntervalTime,
 			motionCanvas: canvas,
 			initSuccessCallback: () => {
-				Log.info("MMM-MotionDetector: DiffCamEngine init successful");
+				Log.info("MMM-MotionDetector: DiffCamEngine init successful.");
 				DiffCamEngine.start();
 			},
 			initErrorCallback: (error) => {
