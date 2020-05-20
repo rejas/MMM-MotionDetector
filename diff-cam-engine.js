@@ -36,11 +36,11 @@ const DiffCamEngine = (function() {
 		// incoming options with defaults
 		video = options.video || document.createElement("video");
 		motionCanvas = options.motionCanvas || document.createElement("canvas");
-		captureIntervalTime = options.captureIntervalTime || 100;
-		captureWidth = options.captureWidth || 640;
-		captureHeight = options.captureHeight || 480;
-		diffWidth = options.diffWidth || 64;
-		diffHeight = options.diffHeight || 48;
+		captureIntervalTime = options.captureIntervalTime || 30000;
+		captureWidth = options.captureWidth || 160;
+		captureHeight = options.captureHeight || 120;
+		diffWidth = options.diffWidth || 16;
+		diffHeight = options.diffHeight || 12;
 		pixelDiffThreshold = options.pixelDiffThreshold || 32;
 		scoreThreshold = options.scoreThreshold || 16;
 		includeMotionBox = options.includeMotionBox || false;
