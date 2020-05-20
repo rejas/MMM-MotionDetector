@@ -169,5 +169,6 @@ config: {
 ## Acknowledgements
 
 Many thanks to 
+- [rejas](https://github.com/rejas/MMM-MotionDetector) for the motion detection module
 - [alexyak](https://github.com/alexyak/motiondetector) for the original module code
 - [lonekorean](https://github.com/lonekorean/diff-cam-engine/) for the diffcam engine code.
