@@ -1,4 +1,4 @@
-Module.register("MMM-MotionDetector", {
+Module.register("MMM-Adaptive-Display", {
 
 	defaults: {
 		captureIntervalTime: 1000, // 1 second
@@ -16,7 +16,7 @@ Module.register("MMM-MotionDetector", {
 	error: null,
 
 	getHeader: function () {
-		return "MMM-MotionDetector";
+		return "MMM-Adaptive-Display";
 	},
 
 	getScripts: function () {
@@ -27,7 +27,7 @@ Module.register("MMM-MotionDetector", {
 	},
 
 	getTemplate: function () {
-		return "MMM-MotionDetector.njk";
+		return "MMM-Adaptive-Display.njk";
 	},
 
 	getTemplateData: function () {
@@ -48,9 +48,9 @@ Module.register("MMM-MotionDetector", {
 	},
 
 	start: function () {
-		Log.info("MMM-MotionDetector: starting up");
+		Log.info("MMM-Adaptive-Display: starting up");
 
-		this.data.header = "MMM-MotionDetector";
+		this.data.header = "MMM-Adaptive-Display";
 		this.lastScoreDetected = 0;
 		this.lastTimeMotionDetected = new Date();
 		this.lastTimePoweredOff = new Date();
@@ -71,11 +71,11 @@ Module.register("MMM-MotionDetector", {
 			captureIntervalTime: this.config.captureIntervalTime,
 			motionCanvas: canvas,
 			initSuccessCallback: () => {
-				Log.info("MMM-MotionDetector: DiffCamEngine init successful");
+				Log.info("MMM-Adaptive-Display: DiffCamEngine init successful");
 				DiffCamEngine.start();
 			},
 			initErrorCallback: (error) => {
-				Log.error("MMM-MotionDetector: DiffCamEngine init failed. " + error);
+				Log.error("MMM-Adaptive-Display: DiffCamEngine init failed. " + error);
 				this.error = error;
 				this.updateDom();
 			},

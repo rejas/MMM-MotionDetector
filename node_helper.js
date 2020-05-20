@@ -5,7 +5,7 @@ module.exports = NodeHelper.create({
 	start: function () {
 		this.started = false;
 		this.isMonitorOn(function(result) {
-			console.log("MMM-MotionDetector: monitor on " + result);
+			console.log("MMM-Adaptive-Display: monitor on " + result);
 		});
 	},
 
@@ -14,9 +14,9 @@ module.exports = NodeHelper.create({
 			if (!result) {
 				exec("vcgencmd display_power 1", function(err, out, code) {
 					if (err) {
-						console.error("MMM-MotionDetector: error activating monitor: " + code);
+						console.error("MMM-Adaptive-Display: error activating monitor: " + code);
 					} else {
-						console.log("MMM-MotionDetector: monitor has been activated");
+						console.log("MMM-Adaptive-Display: monitor has been activated");
 					}
 				});
 			}
@@ -29,9 +29,9 @@ module.exports = NodeHelper.create({
 			if (result) {
 				exec("vcgencmd display_power 0", function(err, out, code) {
 					if (err) {
-						console.error("MMM-MotionDetector: error deactivating monitor: " + code);
+						console.error("MMM-Adaptive-Display: error deactivating monitor: " + code);
 					} else {
-						console.log("MMM-MotionDetector: monitor has been deactivated");
+						console.log("MMM-Adaptive-Display: monitor has been deactivated");
 					}
 				});
 			}
@@ -42,11 +42,11 @@ module.exports = NodeHelper.create({
 	isMonitorOn: function(resultCallback) {
 		exec("vcgencmd display_power", function(err, out, code) {
 			if (err) {
-				console.error("MMM-MotionDetector: error calling monitor status: " + code);
+				console.error("MMM-Adaptive-Display: error calling monitor status: " + code);
 				return;
 			}
 
-			console.log("MMM-MotionDetector: monitor " + out);
+			console.log("MMM-Adaptive-Display: monitor " + out);
 			resultCallback(out.includes("=1"));
 		});
 	},
@@ -54,12 +54,12 @@ module.exports = NodeHelper.create({
 	// Subclass socketNotificationReceived received.
 	socketNotificationReceived: function (notification, payload) {
 		if (notification === "MOTION_DETECTED" && this.started === false) {
-			console.log("MMM-MotionDetector: MOTION_DETECTED, score " + payload.score);
+			console.log("MMM-Adaptive-Display: MOTION_DETECTED, score " + payload.score);
 			this.started = true;
 			this.activateMonitor();
 		}
 		if (notification === "DEACTIVATE_MONITOR" && this.started === false) {
-			console.log("MMM-MotionDetector: DEACTIVATE_MONITOR, percentage off: " + payload.percentageOff);
+			console.log("MMM-Adaptive-Display: DEACTIVATE_MONITOR, percentage off: " + payload.percentageOff);
 			this.started = true;
 			this.deactivateMonitor();
 		}
