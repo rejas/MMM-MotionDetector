@@ -1,10 +1,11 @@
 const NodeHelper = require("node_helper");
 const exec = require("child_process").exec;
+const Log = require("../../js/logger");
 
 module.exports = NodeHelper.create({
   start: function () {
     this.isMonitorOn(function (result) {
-      console.log("MMM-MotionDetector: monitor on " + result);
+      Log.info("MMM-MotionDetector: monitor on " + result);
     });
   },
 
@@ -13,11 +14,9 @@ module.exports = NodeHelper.create({
       if (!result) {
         exec("vcgencmd display_power 1", function (err, out, code) {
           if (err) {
-            console.error(
-              "MMM-MotionDetector: error activating monitor: " + code
-            );
+            Log.error("MMM-MotionDetector: error activating monitor: " + code);
           } else {
-            console.log("MMM-MotionDetector: monitor has been activated");
+            Log.info("MMM-MotionDetector: monitor has been activated");
           }
         });
       }
@@ -29,11 +28,11 @@ module.exports = NodeHelper.create({
       if (result) {
         exec("vcgencmd display_power 0", function (err, out, code) {
           if (err) {
-            console.error(
+            Log.error(
               "MMM-MotionDetector: error deactivating monitor: " + code
             );
           } else {
-            console.log("MMM-MotionDetector: monitor has been deactivated");
+            Log.info("MMM-MotionDetector: monitor has been deactivated");
           }
         });
       }
@@ -43,26 +42,22 @@ module.exports = NodeHelper.create({
   isMonitorOn: function (resultCallback) {
     exec("vcgencmd display_power", function (err, out, code) {
       if (err) {
-        console.error(
-          "MMM-MotionDetector: error calling monitor status: " + code
-        );
+        Log.error("MMM-MotionDetector: error calling monitor status: " + code);
         return;
       }
 
-      console.log("MMM-MotionDetector: monitor " + out);
+      Log.info("MMM-MotionDetector: monitor " + out);
       resultCallback(out.includes("=1"));
     });
   },
 
   socketNotificationReceived: function (notification, payload) {
     if (notification === "MOTION_DETECTED") {
-      console.log(
-        "MMM-MotionDetector: MOTION_DETECTED, score " + payload.score
-      );
+      Log.info("MMM-MotionDetector: MOTION_DETECTED, score " + payload.score);
       this.activateMonitor();
     }
     if (notification === "DEACTIVATE_MONITOR") {
-      console.log(
+      Log.info(
         "MMM-MotionDetector: DEACTIVATE_MONITOR, percentage off: " +
           payload.percentageOff
       );
