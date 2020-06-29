@@ -14,11 +14,11 @@ Accessing your (web)cam requires to have the client run on localhost or a HTTPS 
 
 Just in case you still have problems (like [here](https://github.com/rejas/MMM-MotionDetector/issues/6)) check your config and see if you can solve it by outcommenting the ip-address under
 
-``` JavaScript
+```JavaScript
 var config = {
     	address : '0.0.0.0',
 	...
-``` 
+```
 
 #### Configuring MotionDetector with another module that requires MagicMirror address to be 0.0.0.0
 
@@ -27,7 +27,8 @@ You can do this by doing a simple workaround. You need to config the MagicMirror
 As MagicMirror uses an express server, you can install http-proxy-middleware plugin for express. Then you need to create 2 files:
 
 routes.json
-``` JavaScript
+
+```JavaScript
 {
   "routes": [
     {
@@ -36,10 +37,11 @@ routes.json
     }
   ]
 }
-``` 
+```
 
 proxyserver.js
-``` JavaScript
+
+```JavaScript
 // Dependencies
 const express = require('express');
 const proxy = require('http-proxy-middleware');
@@ -62,7 +64,8 @@ for (route of routes) {
 
 // Start server and listen on port 8081
 app.listen(8081, () => {});
-``` 
+```
+
 Now just start the proxyserver e.g. with PM2 like you may run your MagicMirror.
 
 You can now call http://ipaddress:8081/mirror/modulename and it will be forwarded to http://localhost:8080/modulename.
@@ -85,46 +88,46 @@ Another tutorial on how to enable the PI-camera in the browser can be found [in 
 ## Using the module
 
 To use this module, add it to the modules array in the `config/config.js` file:
-````javascript
+
+```javascript
 modules: [
-	{
-		module: "MMM-MotionDetector",
-		position: "top_left",	// Optional. This can be any of the regions. Displays debug informations.
-		config: {
-			// The config property is optional.
-			// See 'Configuration options' for more information.
-		}
-	}
-]
-````
+  {
+    module: "MMM-MotionDetector",
+    position: "top_left", // Optional. This can be any of the regions. Displays debug informations.
+    config: {
+      // The config property is optional.
+      // See 'Configuration options' for more information.
+    }
+  }
+];
+```
 
 ## Configuration options
 
 The following properties can be configured:
 
-| Option                       | Description
-| ---------------------------- | -----------
-| `captureIntervalTime`        | Time in ms between capturing images for detection<br><br>**Default value:** `1000`|
-| `scoreThreshold`             | Threshold minimum for an image to be considered significant<br><br>**Default value:** `20`|
-| `timeout`                    | Time in ms after which monitor is turned off when no motion is detected<br><br>**Default value:** `120000`|
+| Option                | Description                                                                                                |
+| --------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `captureIntervalTime` | Time in ms between capturing images for detection<br><br>**Default value:** `1000`                         |
+| `scoreThreshold`      | Threshold minimum for an image to be considered significant<br><br>**Default value:** `20`                 |
+| `timeout`             | Time in ms after which monitor is turned off when no motion is detected<br><br>**Default value:** `120000` |
 
 #### Default value:
 
-````javascript
+```javascript
 config: {
     captureIntervalTime: 1000,
     scoreThreshold: 20,
     timeout: 120000
 }
-````
+```
 
 ## Notifications send
 
-| Notification          | Payload       | Description
-| --------------------- | ------------- | ------------
-| `MOTION_DETECTED`     | score         | score calculated by the diff-cam-engine, 0 or greater |
-| `DEACTIVATE_MONITOR`  | percentageOff | percentage of time the monitor was deactivated since the module started |
-
+| Notification         | Payload       | Description                                                             |
+| -------------------- | ------------- | ----------------------------------------------------------------------- |
+| `MOTION_DETECTED`    | score         | score calculated by the diff-cam-engine, 0 or greater                   |
+| `DEACTIVATE_MONITOR` | percentageOff | percentage of time the monitor was deactivated since the module started |
 
 ## Changelog
 
@@ -168,6 +171,7 @@ config: {
 
 ## Acknowledgements
 
-Many thanks to 
+Many thanks to
+
 - [alexyak](https://github.com/alexyak/motiondetector) for the original module code
 - [lonekorean](https://github.com/lonekorean/diff-cam-engine/) for the diffcam engine code.
