@@ -96,7 +96,7 @@ Module.register("MMM-MotionDetector", {
         } else {
           const time =
             currentDate.getTime() - this.lastTimeMotionDetected.getTime();
-          if (time > this.config.timeout && !this.poweredOff) {
+          if (this.config.timeout >= 0 && time > this.config.timeout && !this.poweredOff) {
             this.sendSocketNotification("DEACTIVATE_MONITOR", {
               percentageOff: this.percentagePoweredOff
             });
