@@ -33,6 +33,7 @@ Module.register("MMM-MotionDetector", {
       lastScoreDetected: this.lastScoreDetected,
       lastTimeMotionDetected: this.lastTimeMotionDetected.toLocaleTimeString(),
       percentagePoweredOff: this.percentagePoweredOff,
+      timeout: this.config.timeout,
       error: this.error
     };
   },
