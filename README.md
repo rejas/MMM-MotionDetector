@@ -131,6 +131,12 @@ config: {
 
 ## Changelog
 
+### [1.6.0] - 2020-07-05
+
+- Allow disabling the monitor-functionality and just get the motion detection
+- Use Logger from MM² core
+- Update dependencies
+
 ### [1.5.0] - 2019-07-14
 
 - Show error on UI element when something goes wrong during initialization
