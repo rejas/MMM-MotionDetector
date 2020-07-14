@@ -73,7 +73,7 @@ Module.register("MMM-MotionDetector", {
         DiffCamEngine.start();
       },
       initErrorCallback: (error) => {
-        Log.error("MMM-MotionDetector: DiffCamEngine init failed. " + error);
+        Log.error("MMM-MotionDetector: DiffCamEngine init failed: " + error);
         this.error = error;
         this.updateDom();
       },
@@ -84,7 +84,7 @@ Module.register("MMM-MotionDetector", {
           2
         );
         if (score > this.config.scoreThreshold) {
-		  Log.info("MMM-MotionDetector: Motion detected, score " + score);
+          Log.info("MMM-MotionDetector: Motion detected, score " + score);
           this.sendSocketNotification("MOTION_DETECTED", { score: score });
           this.sendNotification("MOTION_DETECTED", { score: score });
           if (this.poweredOff) {

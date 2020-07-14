@@ -55,7 +55,7 @@ module.exports = NodeHelper.create({
       this.activateMonitor();
     }
     if (notification === "DEACTIVATE_MONITOR") {
-      Log.info("MMM-MotionDetector: deactivating monitor");
+      Log.info("MMM-MotionDetector: deactivating monitor.");
       this.deactivateMonitor();
     }
   },
