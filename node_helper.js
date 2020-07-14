@@ -50,12 +50,12 @@ module.exports = NodeHelper.create({
   },
 
   socketNotificationReceived: function (notification, payload) {
-    if (notification === "MOTION_DETECTED") {
+    if (notification === "ACTIVATE_MONITOR") {
       Log.info("MMM-MotionDetector: activating monitor.");
       this.activateMonitor();
     }
     if (notification === "DEACTIVATE_MONITOR") {
-      Log.info("MMM-MotionDetector: deactivating monitor, percentage off: " + payload.percentageOff);
+      Log.info("MMM-MotionDetector: deactivating monitor");
       this.deactivateMonitor();
     }
   },

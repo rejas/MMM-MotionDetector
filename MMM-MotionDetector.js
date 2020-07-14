@@ -55,7 +55,7 @@ Module.register("MMM-MotionDetector", {
     this.timeStarted = new Date().getTime();
 
     // make sure that the monitor is on when starting
-    this.sendSocketNotification("MOTION_DETECTED", { score: "initialising!" });
+    this.sendSocketNotification("ACTIVATE_MONITOR");
 
     const canvas = document.createElement("canvas");
     const video = document.createElement("video");
@@ -84,23 +84,19 @@ Module.register("MMM-MotionDetector", {
           2
         );
         if (score > this.config.scoreThreshold) {
+		  Log.info("MMM-MotionDetector: Motion detected, score " + score);
+          this.sendSocketNotification("MOTION_DETECTED", { score: score });
+          this.sendNotification("MOTION_DETECTED", { score: score });
           if (this.poweredOff) {
+            this.sendSocketNotification("ACTIVATE_MONITOR");
             this.poweredOffTime = this.poweredOffTime + (currentDate.getTime() - this.lastTimePoweredOff.getTime());
-            this.sendSocketNotification("MOTION_DETECTED", { score: score });
-            this.sendNotification("MOTION_DETECTED", { score: score });
-		  	Log.info("MMM-MotionDetector: Motion detected, score " + score);
             this.poweredOff = false;
           }
           this.lastTimeMotionDetected = currentDate;
         } else {
           const time = currentDate.getTime() - this.lastTimeMotionDetected.getTime();
           if (this.config.timeout >= 0 && time > this.config.timeout && !this.poweredOff) {
-            this.sendSocketNotification("DEACTIVATE_MONITOR", {
-              percentageOff: this.percentagePoweredOff,
-            });
-            this.sendNotification("DEACTIVATE_MONITOR", {
-              percentageOff: this.percentagePoweredOff,
-            });
+            this.sendSocketNotification("DEACTIVATE_MONITOR");
             this.lastTimePoweredOff = currentDate;
             this.poweredOff = true;
           }
