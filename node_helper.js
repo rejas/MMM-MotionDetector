@@ -5,7 +5,7 @@ const Log = require("../../js/logger");
 module.exports = NodeHelper.create({
   start: function () {
     this.isMonitorOn(function (result) {
-      Log.info("MMM-MotionDetector: monitor on " + result);
+      Log.info("MMM-MotionDetector: monitor is " + (result ? "ON" : "OFF") + ".");
     });
   },
 
@@ -16,7 +16,7 @@ module.exports = NodeHelper.create({
           if (err) {
             Log.error("MMM-MotionDetector: error activating monitor: " + code);
           } else {
-            Log.info("MMM-MotionDetector: monitor has been activated");
+            Log.info("MMM-MotionDetector: monitor has been activated.");
           }
         });
       }
@@ -30,7 +30,7 @@ module.exports = NodeHelper.create({
           if (err) {
             Log.error("MMM-MotionDetector: error deactivating monitor: " + code);
           } else {
-            Log.info("MMM-MotionDetector: monitor has been deactivated");
+            Log.info("MMM-MotionDetector: monitor has been deactivated.");
           }
         });
       }
@@ -44,14 +44,14 @@ module.exports = NodeHelper.create({
         return;
       }
 
-      Log.info("MMM-MotionDetector: monitor " + out);
+      Log.info("MMM-MotionDetector: monitor status is " + out);
       resultCallback(out.includes("=1"));
     });
   },
 
   socketNotificationReceived: function (notification, payload) {
     if (notification === "MOTION_DETECTED") {
-      Log.info("MMM-MotionDetector: MOTION_DETECTED, score " + payload.score);
+      Log.info("MMM-MotionDetector: activating monitor.");
       this.activateMonitor();
     }
     if (notification === "DEACTIVATE_MONITOR") {
