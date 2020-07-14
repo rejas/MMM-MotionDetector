@@ -28,9 +28,7 @@ module.exports = NodeHelper.create({
       if (result) {
         exec("vcgencmd display_power 0", function (err, out, code) {
           if (err) {
-            Log.error(
-              "MMM-MotionDetector: error deactivating monitor: " + code
-            );
+            Log.error("MMM-MotionDetector: error deactivating monitor: " + code);
           } else {
             Log.info("MMM-MotionDetector: monitor has been deactivated");
           }
@@ -57,11 +55,8 @@ module.exports = NodeHelper.create({
       this.activateMonitor();
     }
     if (notification === "DEACTIVATE_MONITOR") {
-      Log.info(
-        "MMM-MotionDetector: DEACTIVATE_MONITOR, percentage off: " +
-          payload.percentageOff
-      );
+      Log.info("MMM-MotionDetector: deactivating monitor, percentage off: " + payload.percentageOff);
       this.deactivateMonitor();
     }
-  }
+  },
 });

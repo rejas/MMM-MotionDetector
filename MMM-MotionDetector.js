@@ -3,7 +3,7 @@ Module.register("MMM-MotionDetector", {
   defaults: {
     captureIntervalTime: 1000, // 1 second
     scoreThreshold: 20,
-    timeout: 120000 // 2 minutes
+    timeout: 120000, // 2 minutes
   },
 
   lastScoreDetected: null,
@@ -34,7 +34,7 @@ Module.register("MMM-MotionDetector", {
       lastTimeMotionDetected: this.lastTimeMotionDetected.toLocaleTimeString(),
       percentagePoweredOff: this.percentagePoweredOff,
       timeout: this.config.timeout,
-      error: this.error
+      error: this.error,
     };
   },
 
@@ -80,29 +80,25 @@ Module.register("MMM-MotionDetector", {
       captureCallback: (payload) => {
         const score = payload.score;
         const currentDate = new Date();
-        this.percentagePoweredOff = (
-          (100 * this.poweredOffTime) /
-          (currentDate.getTime() - this.timeStarted)
-        ).toFixed(2);
+        this.percentagePoweredOff = ((100 * this.poweredOffTime) / (currentDate.getTime() - this.timeStarted)).toFixed(
+          2
+        );
         if (score > this.config.scoreThreshold) {
           if (this.poweredOff) {
-            this.poweredOffTime =
-              this.poweredOffTime +
-              (currentDate.getTime() - this.lastTimePoweredOff.getTime());
+            this.poweredOffTime = this.poweredOffTime + (currentDate.getTime() - this.lastTimePoweredOff.getTime());
             this.sendSocketNotification("MOTION_DETECTED", { score: score });
             this.sendNotification("MOTION_DETECTED", { score: score });
             this.poweredOff = false;
           }
           this.lastTimeMotionDetected = currentDate;
         } else {
-          const time =
-            currentDate.getTime() - this.lastTimeMotionDetected.getTime();
+          const time = currentDate.getTime() - this.lastTimeMotionDetected.getTime();
           if (this.config.timeout >= 0 && time > this.config.timeout && !this.poweredOff) {
             this.sendSocketNotification("DEACTIVATE_MONITOR", {
-              percentageOff: this.percentagePoweredOff
+              percentageOff: this.percentagePoweredOff,
             });
             this.sendNotification("DEACTIVATE_MONITOR", {
-              percentageOff: this.percentagePoweredOff
+              percentageOff: this.percentagePoweredOff,
             });
             this.lastTimePoweredOff = currentDate;
             this.poweredOff = true;
@@ -110,7 +106,7 @@ Module.register("MMM-MotionDetector", {
         }
         this.lastScoreDetected = score;
         this.updateDom();
-      }
+      },
     });
-  }
+  },
 });
