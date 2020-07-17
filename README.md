@@ -2,10 +2,13 @@
 
 ## Installation
 
-Just clone the module into your MagicMirror modules folder:
+Installation is typical of MagicMirror modules. Just clone the module into your MagicMirror modules folder, switch to that folder and run the install:
 
 ```
+cd ~/MagicMirror/modules
 git clone https://github.com/rejas/MMM-MotionDetector.git
+cd MMM-MotionDetector
+npm install
 ```
 
 ## Requirements
@@ -76,6 +79,8 @@ As you are bypassing browser security with this workaround you may want to add s
 
 So far I only used a [PlayStation3 Eye Webcam](https://en.wikipedia.org/wiki/PlayStation_Eye) for motion-detection at my MagicMirror. If you have successfully used this module with any other webcam, I'd be happy to hear about it.
 
+[Brian Hepler](https://github.com/BrianHepler) has successfully tested this module with a generic Raspberry Pi camera module and an RPi4
+
 If you want to use the wired PI-camera follow these steps provided by [@rev138](https://github.com/rejas/MMM-MotionDetector/issues/8#issuecomment-483356950):
 
     - Open /etc/modules-load.d/modules.conf
@@ -110,7 +115,10 @@ The following properties can be configured:
 | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `captureIntervalTime` | Time in ms between capturing images for detection<br><br>**Default value:** `1000`                                                                        |
 | `scoreThreshold`      | Threshold minimum for an image to be considered significant<br><br>**Default value:** `20`                                                                |
-| `timeout`             | Time in ms after which monitor is turned off when no motion is detected<br><br>Set to -1 to never turn off the monitor<br><br>**Default value:** `120000` |
+| `timeout`             | Time in ms after which monitor is turned off and the additional notification sent (if any) when no motion is detected. <br><br>**Default value:** `120000` |
+| `controlDisplay` | The module will turn the monitor on & off in response to motion.<br><br>**Default value:** `true` |
+| `additionalNotification` | An additional notification to send to other modules. Any value other than false will be the notification.<br><br>**Default value:** `false` |
+| `debug` | Add verbose log messages in the console.<br><br>**Default value:** `false` |
 
 #### Default value:
 
@@ -118,7 +126,10 @@ The following properties can be configured:
 config: {
     captureIntervalTime: 1000,
     scoreThreshold: 20,
-    timeout: 120000
+    timeout: 120000,
+    controlDisplay: true,
+    additionalNotification: false,
+    debug: false
 }
 ```
 
@@ -128,8 +139,13 @@ config: {
 | -------------------- | ------------- | ----------------------------------------------------------------------- |
 | `MOTION_DETECTED`    | score         | score calculated by the diff-cam-engine, 0 or greater                   |
 | `DEACTIVATE_MONITOR` | percentageOff | percentage of time the monitor was deactivated since the module started |
+| [User-specified] | empty string | A user-defined notification. (ex: `TAKE_SELFIE`, `SHOW_FRAME_1`, `LAUNCH_WARHEADS`, etc.)
 
 ## Changelog
+### [1.6.1] - 2020-07-17
+- Separate variables for monitor control, timeout
+- Debug switch
+- User-defined notification
 
 ### [1.6.0] - 2020-07-05
 
