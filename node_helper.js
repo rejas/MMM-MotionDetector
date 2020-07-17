@@ -55,24 +55,12 @@ module.exports = NodeHelper.create({
     if (notification === "ACTIVATE_MONITOR") {
       Log.info("MMM-MotionDetector: activating monitor.");
       this.activateMonitor();
-    }
-    if (notification === "DEACTIVATE_MONITOR") {
+    } else if (notification === "DEACTIVATE_MONITOR") {
       Log.info("MMM-MotionDetector: deactivating monitor.");
       this.deactivateMonitor();
-    }
-    if (notification === "MOTION_CONFIG") {
-			this.config = payload;
-			console.log(this.name + " configured.");
-    }
-    if (this.config.debug) {
-			console.log(this.name + " Notification received.");
+    } else {
+			console.log(this.name + ": Notification received (" + notification + " / " + payload +")");
 		}
   },
-
-  notificationReceived: function (notification, payload) {
-		if (this.config != null && this.config.debug) {
-			console.log(this.name + " Notification broadcast received: " + notification);
-		}
-	}
 
 });
