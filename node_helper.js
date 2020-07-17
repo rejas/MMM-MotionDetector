@@ -3,7 +3,6 @@ const exec = require("child_process").exec;
 const Log = require("../../js/logger");
 
 module.exports = NodeHelper.create({
-  config: null,
 
   start: function () {
     this.isMonitorOn(function (result) {
