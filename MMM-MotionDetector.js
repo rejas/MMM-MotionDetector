@@ -7,7 +7,6 @@ Module.register("MMM-MotionDetector", {
     timeout: 120000, // 2 minutes
     controlDisplay: true, // switch the monitor on/off
 		additionalNotification: false, // set to some other value to specify an additional notification sent to all modules
-		debug: false // set to true for verbose console logging
   },
 
   lastScoreDetected: null,
@@ -44,7 +43,7 @@ Module.register("MMM-MotionDetector", {
 
   // Override socket notification handler.
   socketNotificationReceived: function (notification, payload) {
-    if (this.config.debug) { Log.info("Notification received: " + notification); }
+    Log.debug("Notification received: " + notification);
     if (notification === "USER_PRESENCE") {
       this.sendNotification(notification, payload);
     }
@@ -76,12 +75,12 @@ Module.register("MMM-MotionDetector", {
 
       initSuccessCallback: () => {
         Log.info("MMM-MotionDetector: DiffCamEngine init successful.");
-        if (this.config.debug) {
-					Log.info("Timeout set to " + this.config.timeout + " milliseconds.");
-					Log.info("Motion threshold set to " + this.config.scoreThreshold);
-					Log.info("Will MotionDetector control the monitor? " + this.config.controlDisplay);
-					if (this.config.additionalNotification) { Log.info("Will send additional notification: " + this.config.additionalNotification); }
-				}
+        
+        Log.debug("Timeout set to " + this.config.timeout + " milliseconds.");
+        Log.debug("Motion threshold set to " + this.config.scoreThreshold);
+        Log.debug("Will MotionDetector control the monitor? " + this.config.controlDisplay);
+        if (this.config.additionalNotification) { Log.debug("Will send additional notification: " + this.config.additionalNotification); }
+      
         DiffCamEngine.start();
       },
       initErrorCallback: (error) => {
@@ -106,7 +105,7 @@ Module.register("MMM-MotionDetector", {
 
             // if configured for additional notification, send it out
 						if (this.config.additionalNotification) {
-							if (this.config.debug) { Log.info("Additional notification outbound: " + this.config.additionalNotification); }
+							Log.debug("Additional notification outbound: " + this.config.additionalNotification);
 							this.sendNotification(this.config.additionalNotification, "");
             }
 
@@ -118,7 +117,7 @@ Module.register("MMM-MotionDetector", {
         } else {
           if (this.config.timeout >= 0 && time > this.config.timeout && !this.poweredOff) {
             if (this.config.controlDisplay) {
-              if (this.config.debug) { Log.info("Deactivating monitor."); }
+              Log.debug("Deactivating monitor.");
               this.sendSocketNotification("DEACTIVATE_MONITOR");
             }
             this.lastTimePoweredOff = currentDate;
