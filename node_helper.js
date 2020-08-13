@@ -54,12 +54,13 @@ module.exports = NodeHelper.create({
     if (notification === "ACTIVATE_MONITOR") {
       Log.info("MMM-MotionDetector: activating monitor.");
       this.activateMonitor();
-    } else if (notification === "DEACTIVATE_MONITOR") {
+    }
+    if (notification === "DEACTIVATE_MONITOR") {
       Log.info("MMM-MotionDetector: deactivating monitor.");
       this.deactivateMonitor();
     } else {
-			console.log(this.name + ": Motion detected (" + payload.score +")");
-		}
+		  console.log(this.name + ": Motion detected (" + payload.score +")");
+    }
   },
 
 });
