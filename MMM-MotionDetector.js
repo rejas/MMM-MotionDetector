@@ -1,4 +1,3 @@
-/* eslint-disable indent */
 /* global DiffCamEngine */
 Module.register("MMM-MotionDetector", {
   defaults: {

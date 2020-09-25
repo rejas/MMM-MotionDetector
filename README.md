@@ -118,7 +118,6 @@ The following properties can be configured:
 | `timeout`             | Time in ms after which monitor is turned off and the additional notification sent (if any) when no motion is detected. <br><br>**Default value:** `120000` |
 | `controlDisplay` | The module will turn the monitor on & off in response to motion.<br><br>**Default value:** `true` |
 | `additionalNotification` | An additional notification to send to other modules. Any value other than false will be the notification.<br><br>**Default value:** `false` |
-| `debug` | Add verbose log messages in the console.<br><br>**Default value:** `false` |
 
 #### Default value:
 
@@ -128,8 +127,7 @@ config: {
     scoreThreshold: 20,
     timeout: 120000,
     controlDisplay: true,
-    additionalNotification: false,
-    debug: false
+    additionalNotification: false
 }
 ```
 
@@ -144,7 +142,6 @@ config: {
 ## Changelog
 ### [1.6.1] - 2020-07-17
 - Separate variables for monitor control, timeout
-- Debug switch
 - User-defined notification
 
 ### [1.6.0] - 2020-07-05
