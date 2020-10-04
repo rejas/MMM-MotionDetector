@@ -3,7 +3,6 @@ const exec = require("child_process").exec;
 const Log = require("../../js/logger");
 
 module.exports = NodeHelper.create({
-
   start: function () {
     this.isMonitorOn(function (result) {
       Log.info("MMM-MotionDetector: monitor is " + (result ? "ON" : "OFF") + ".");
@@ -58,9 +57,6 @@ module.exports = NodeHelper.create({
     if (notification === "DEACTIVATE_MONITOR") {
       Log.info("MMM-MotionDetector: deactivating monitor.");
       this.deactivateMonitor();
-    } else {
-      console.log(this.name + ": Motion detected (" + payload.score +")");
     }
   },
-
 });
