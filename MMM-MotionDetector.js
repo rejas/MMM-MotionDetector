@@ -74,16 +74,15 @@ Module.register("MMM-MotionDetector", {
 
       initSuccessCallback: () => {
         Log.info("MMM-MotionDetector: DiffCamEngine init successful.");
-
         Log.info("Timeout set to " + this.config.timeout + " milliseconds.");
         Log.info("Motion threshold set to " + this.config.scoreThreshold);
         Log.info("Will MotionDetector control the monitor? " + this.config.controlDisplay);
         if (this.config.additionalNotification) {
           Log.info("Will send additional notification: " + this.config.additionalNotification);
         }
-
         DiffCamEngine.start();
       },
+
       initErrorCallback: (error) => {
         Log.error("MMM-MotionDetector: DiffCamEngine init failed: " + error);
         this.error = error;
