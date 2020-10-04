@@ -5,7 +5,7 @@ Module.register("MMM-MotionDetector", {
     scoreThreshold: 20,
     timeout: 120000, // 2 minutes
     controlDisplay: true, // switch the monitor on/off
-		additionalNotification: false, // set to some other value to specify an additional notification sent to all modules
+    additionalNotification: false, // set to some other value to specify an additional notification sent to all modules
   },
 
   lastScoreDetected: null,
@@ -42,7 +42,7 @@ Module.register("MMM-MotionDetector", {
 
   // Override socket notification handler.
   socketNotificationReceived: function (notification, payload) {
-    Log.debug("Notification received: " + notification);
+    Log.info("Notification received: " + notification);
     if (notification === "USER_PRESENCE") {
       this.sendNotification(notification, payload);
     }
@@ -74,12 +74,14 @@ Module.register("MMM-MotionDetector", {
 
       initSuccessCallback: () => {
         Log.info("MMM-MotionDetector: DiffCamEngine init successful.");
-        
-        Log.debug("Timeout set to " + this.config.timeout + " milliseconds.");
-        Log.debug("Motion threshold set to " + this.config.scoreThreshold);
-        Log.debug("Will MotionDetector control the monitor? " + this.config.controlDisplay);
-        if (this.config.additionalNotification) { Log.debug("Will send additional notification: " + this.config.additionalNotification); }
-      
+
+        Log.info("Timeout set to " + this.config.timeout + " milliseconds.");
+        Log.info("Motion threshold set to " + this.config.scoreThreshold);
+        Log.info("Will MotionDetector control the monitor? " + this.config.controlDisplay);
+        if (this.config.additionalNotification) {
+          Log.info("Will send additional notification: " + this.config.additionalNotification);
+        }
+
         DiffCamEngine.start();
       },
       initErrorCallback: (error) => {
@@ -91,10 +93,13 @@ Module.register("MMM-MotionDetector", {
       captureCallback: (payload) => {
         const score = payload.score;
         const currentDate = new Date();
-        this.percentagePoweredOff = ((100 * this.poweredOffTime) / (currentDate.getTime() - this.timeStarted)).toFixed(2);
+        this.percentagePoweredOff = ((100 * this.poweredOffTime) / (currentDate.getTime() - this.timeStarted)).toFixed(
+          2
+        );
         const time = currentDate.getTime() - this.lastTimeMotionDetected.getTime();
 
-        if (score > this.config.scoreThreshold) { // We have found motion
+        if (score > this.config.scoreThreshold) {
+          // We have found motion
           Log.info("MMM-MotionDetector: Motion detected, score " + score);
           this.sendSocketNotification("MOTION_DETECTED", { score: score });
 
@@ -103,16 +108,15 @@ Module.register("MMM-MotionDetector", {
             this.sendNotification("MOTION_DETECTED", { score: score });
 
             // if configured for additional notification, send it out
-						if (this.config.additionalNotification) {
-							Log.debug("Additional notification outbound: " + this.config.additionalNotification);
-							this.sendNotification(this.config.additionalNotification, "");
+            if (this.config.additionalNotification) {
+              Log.debug("Additional notification outbound: " + this.config.additionalNotification);
+              this.sendNotification(this.config.additionalNotification, "");
             }
 
             this.sendSocketNotification("ACTIVATE_MONITOR");
             this.poweredOff = false;
           }
           this.lastTimeMotionDetected = currentDate;
-
         } else {
           if (this.config.timeout >= 0 && time > this.config.timeout && !this.poweredOff) {
             if (this.config.controlDisplay) {
