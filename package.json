@@ -19,6 +19,6 @@
     "motion detection"
   ],
   "devDependencies": {
-    "eslint": "^7.4.0"
+    "eslint": "^7.10.0"
   }
 }
