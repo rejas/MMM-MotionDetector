@@ -97,8 +97,8 @@ modules: [
     config: {
       // The config property is optional.
       // See 'Configuration options' for more information.
-    }
-  }
+    },
+  },
 ];
 ```
 
