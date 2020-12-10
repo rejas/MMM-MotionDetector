@@ -18,7 +18,7 @@ module.exports = NodeHelper.create({
   activateMonitor: function () {
     this.isMonitorOn(function (result) {
       if (!result) {
-        exec("vcgencmd display_power 1", function (err, out, code) {
+        exec("caffeinate -u -t 1", function (err, out, code) {
           if (err) {
             Log.error("MMM-MotionDetector: error activating monitor: " + code);
           } else {
@@ -35,7 +35,7 @@ module.exports = NodeHelper.create({
   deactivateMonitor: function () {
     this.isMonitorOn(function (result) {
       if (result) {
-        exec("vcgencmd display_power 0", function (err, out, code) {
+        exec("pmset displaysleepnow", function (err, out, code) {
           if (err) {
             Log.error("MMM-MotionDetector: error deactivating monitor: " + code);
           } else {
@@ -51,14 +51,14 @@ module.exports = NodeHelper.create({
    * @param resultCallback
    */
   isMonitorOn: function (resultCallback) {
-    exec("vcgencmd display_power", function (err, out, code) {
+    exec("pmset -g powerstate IODisplayWrangler | tail -1 | cut -c29", function (err, out, code) {
       if (err) {
         Log.error("MMM-MotionDetector: error calling monitor status: " + code);
         return;
       }
 
       Log.info("MMM-MotionDetector: monitor status is " + out);
-      resultCallback(out.includes("=1"));
+      resultCallback(out.includes("4"));
     });
   },
 
