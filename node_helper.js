@@ -3,12 +3,18 @@ const exec = require("child_process").exec;
 const Log = require("../../js/logger");
 
 module.exports = NodeHelper.create({
+  /**
+   *
+   */
   start: function () {
     this.isMonitorOn(function (result) {
       Log.info("MMM-MotionDetector: monitor is " + (result ? "ON" : "OFF") + ".");
     });
   },
 
+  /**
+   *
+   */
   activateMonitor: function () {
     this.isMonitorOn(function (result) {
       if (!result) {
@@ -23,6 +29,9 @@ module.exports = NodeHelper.create({
     });
   },
 
+  /**
+   *
+   */
   deactivateMonitor: function () {
     this.isMonitorOn(function (result) {
       if (result) {
@@ -37,6 +46,10 @@ module.exports = NodeHelper.create({
     });
   },
 
+  /**
+   *
+   * @param resultCallback
+   */
   isMonitorOn: function (resultCallback) {
     exec("vcgencmd display_power", function (err, out, code) {
       if (err) {
@@ -49,6 +62,11 @@ module.exports = NodeHelper.create({
     });
   },
 
+  /**
+   *
+   * @param notification
+   * @param payload
+   */
   socketNotificationReceived: function (notification, payload) {
     if (notification === "ACTIVATE_MONITOR") {
       Log.info("MMM-MotionDetector: activating monitor.");
