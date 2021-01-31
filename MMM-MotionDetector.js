@@ -102,7 +102,8 @@ Module.register("MMM-MotionDetector", {
           }
         }
         this.lastScoreDetected = score;
-        this.updateDom();
+
+        if (this.data.position) this.updateDom();
       },
     });
   },
