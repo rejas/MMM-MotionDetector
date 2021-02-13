@@ -3,7 +3,8 @@ Module.register("MMM-MotionDetector", {
   defaults: {
     captureIntervalTime: 1000, // 1 second
     scoreThreshold: 20,
-    timeout: 120000, // 2 minutes
+    timeout: 120000, // 2 minutes,
+  	deviceId: null
   },
 
   lastScoreDetected: null,
@@ -66,6 +67,7 @@ Module.register("MMM-MotionDetector", {
 
     DiffCamEngine.init({
       video: video,
+	  deviceId: this.config.deviceId,
       captureIntervalTime: this.config.captureIntervalTime,
       motionCanvas: canvas,
       initSuccessCallback: () => {
