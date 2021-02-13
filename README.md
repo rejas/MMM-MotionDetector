@@ -117,6 +117,7 @@ The following properties can be configured:
 | `captureIntervalTime` | Time in ms between capturing images for detection<br><br>**Default value:** `1000`                                                                        |
 | `scoreThreshold`      | Threshold minimum for an image to be considered significant<br><br>**Default value:** `20`                                                                |
 | `timeout`             | Time in ms after which monitor is turned off when no motion is detected<br><br>Set to -1 to never turn off the monitor<br><br>**Default value:** `120000` |
+| `deviceId`            | (optional) specify which camera to use in case multiple exist in the system.                                                                              |
 
 #### Default value:
 
@@ -127,6 +128,13 @@ config: {
     timeout: 120000
 }
 ```
+
+#### How to get the deviceId
+
+You need to retrieve the deviceId from the browser / electron instance you are running this module on.
+
+- If you are running it in a browser, use this command in the web console `navigator.mediaDevices.enumerateDevices()` to get all devices.
+- In the standard MM Electron, add 'export ELECTRON_ENABLE_LOGGING=true' to the mm.sh. Then cat the pm2 error logs and look for the DeviceID.
 
 ## Notifications send
 
