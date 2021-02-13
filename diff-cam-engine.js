@@ -108,7 +108,7 @@ const DiffCamEngine = (function () {
     }
 
     // check if a special deviceId was passed as an option
-    const userMediaOptions = deviceId ? { video: { deviceId: {exact: deviceId } } } : { video: true };
+    const userMediaOptions = deviceId ? { video: { deviceId: { exact: deviceId } } } : { video: true };
 
     // request webcam
     navigator.mediaDevices
