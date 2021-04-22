@@ -26,6 +26,9 @@ const DiffCamEngine = (function () {
   let includeMotionBox; // flag to calculate and draw motion bounding box
   let includeMotionPixels; // flag to create object denoting pixels with motion
 
+  let imageMimeType; // string e.g. "image/jpeg", "image/png"
+  let jpegQuality; // imageMimeType:"image/jpeg" quality value between 0 and 1
+
   let coords;
 
   /**
@@ -51,6 +54,9 @@ const DiffCamEngine = (function () {
     scoreThreshold = options.scoreThreshold || 16;
     includeMotionBox = options.includeMotionBox || false;
     includeMotionPixels = options.includeMotionPixels || false;
+
+    imageMimeType = options.imageMimeType || "image/jpeg";
+    jpegQuality = options.jpegQuality || 0.7;
 
     // callbacks
     initSuccessCallback = options.initSuccessCallback || function () {};
@@ -303,7 +309,13 @@ const DiffCamEngine = (function () {
   function getCaptureUrl(captureImageData) {
     // may as well borrow captureCanvas
     captureContext.putImageData(captureImageData, 0, 0);
-    return captureCanvas.toDataURL();
+    //image mime type
+    //ref: https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toDataURL
+    if (imageMimeType == "image/jpeg") {
+      return captureCanvas.toDataURL("image/jpeg", jpegQuality);
+    } else {
+      return captureCanvas.toDataURL(imageMimeType);
+    }
   }
 
   /**
