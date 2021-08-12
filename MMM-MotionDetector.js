@@ -3,7 +3,8 @@ Module.register("MMM-MotionDetector", {
   defaults: {
     captureIntervalTime: 1000, // 1 second
     scoreThreshold: 20,
-    timeout: 120000, // 2 minutes
+    timeout: 120000, // 2 minutes,
+    deviceId: null,
     controlDisplay: true, // switch the monitor on/off
     additionalNotification: false, // set to some other value to specify an additional notification sent to all modules
   },
@@ -69,6 +70,7 @@ Module.register("MMM-MotionDetector", {
 
     DiffCamEngine.init({
       video: video,
+      deviceId: this.config.deviceId,
       captureIntervalTime: this.config.captureIntervalTime,
       motionCanvas: canvas,
 
@@ -88,17 +90,13 @@ Module.register("MMM-MotionDetector", {
         this.error = error;
         this.updateDom();
       },
-
-      captureCallback: (payload) => {
-        const score = payload.score;
+      captureCallback: ({ score, hasMotion }) => {
         const currentDate = new Date();
         this.percentagePoweredOff = ((100 * this.poweredOffTime) / (currentDate.getTime() - this.timeStarted)).toFixed(
           2
         );
         const time = currentDate.getTime() - this.lastTimeMotionDetected.getTime();
-
-        if (score > this.config.scoreThreshold) {
-          // We have found motion
+        if (hasMotion) {
           Log.info("MMM-MotionDetector: Motion detected, score " + score);
           this.sendSocketNotification("MOTION_DETECTED", { score: score });
 
@@ -127,7 +125,8 @@ Module.register("MMM-MotionDetector", {
           }
         }
         this.lastScoreDetected = score;
-        this.updateDom();
+
+        if (this.data.position) this.updateDom();
       },
     });
   },
