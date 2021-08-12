@@ -80,7 +80,7 @@ Module.register("MMM-MotionDetector", {
         this.error = error;
         this.updateDom();
       },
-      captureCallback: ({ score, hasMotion}) => {
+      captureCallback: ({ score, hasMotion }) => {
         const currentDate = new Date();
         this.percentagePoweredOff = ((100 * this.poweredOffTime) / (currentDate.getTime() - this.timeStarted)).toFixed(
           2
