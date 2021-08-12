@@ -70,6 +70,7 @@ Module.register("MMM-MotionDetector", {
       deviceId: this.config.deviceId,
       captureIntervalTime: this.config.captureIntervalTime,
       motionCanvas: canvas,
+      scoreThreshold: this.config.scoreThreshold,
       initSuccessCallback: () => {
         Log.info("MMM-MotionDetector: DiffCamEngine init successful.");
         DiffCamEngine.start();
@@ -79,13 +80,12 @@ Module.register("MMM-MotionDetector", {
         this.error = error;
         this.updateDom();
       },
-      captureCallback: (payload) => {
-        const score = payload.score;
+      captureCallback: ({ score, hasMotion }) => {
         const currentDate = new Date();
         this.percentagePoweredOff = ((100 * this.poweredOffTime) / (currentDate.getTime() - this.timeStarted)).toFixed(
           2
         );
-        if (score > this.config.scoreThreshold) {
+        if (hasMotion) {
           Log.info("MMM-MotionDetector: Motion detected, score " + score);
           this.sendSocketNotification("MOTION_DETECTED", { score: score });
           this.sendNotification("MOTION_DETECTED", { score: score });

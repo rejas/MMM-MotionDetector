@@ -15,7 +15,7 @@ Accessing your (web)cam requires to have the client run on localhost or a HTTPS 
 Just in case you still have problems (like [here](https://github.com/rejas/MMM-MotionDetector/issues/6)) check your config and see if you can solve it by outcommenting the ip-address under
 
 ```JavaScript
-var config = {
+let config = {
     	address : '0.0.0.0',
 	...
 ```
