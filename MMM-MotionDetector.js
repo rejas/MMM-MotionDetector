@@ -5,6 +5,7 @@ Module.register("MMM-MotionDetector", {
     scoreThreshold: 20,
     timeout: 120000, // 2 minutes,
     deviceId: null,
+    system: "mac", // can be 'vcgencmd', 'mac' or 'cec'
   },
 
   lastScoreDetected: null,
@@ -55,8 +56,9 @@ Module.register("MMM-MotionDetector", {
     this.lastTimePoweredOff = new Date();
     this.timeStarted = new Date().getTime();
 
-    // make sure that the monitor is on when starting
-    this.sendSocketNotification("ACTIVATE_MONITOR");
+    this.sendSocketNotification("INIT_MONITOR", {
+      system: this.config.system,
+    });
 
     const canvas = document.createElement("canvas");
     const video = document.createElement("video");
