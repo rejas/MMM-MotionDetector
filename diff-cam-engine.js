@@ -43,7 +43,7 @@ const DiffCamEngine = (function () {
 
     // incoming options with defaults
     video = options.video || document.createElement("video");
-    deviceId = options.deviceId || null,
+    deviceId = options.deviceId || null;
     motionCanvas = options.motionCanvas || document.createElement("canvas");
     captureIntervalTime = options.captureIntervalTime || 100;
     captureWidth = options.captureWidth || 640;
