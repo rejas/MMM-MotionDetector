@@ -44,7 +44,7 @@ module.exports = NodeHelper.create({
           await exec("echo standby 0 | cec-client -s -d 1");
         },
         status: async () => {
-          const { stdout } = await exec("pmset -g powerstate IODisplayWrangler | tail -1 | cut -c29");
+          const { stdout } = await exec("echo 'pow 0' | cec-client -s -d 1");
           return stdout.includes("4");
         },
       },
