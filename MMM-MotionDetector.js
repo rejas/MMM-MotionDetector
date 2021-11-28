@@ -5,7 +5,7 @@ Module.register("MMM-MotionDetector", {
     scoreThreshold: 20,
     timeout: 120000, // 2 minutes,
     deviceId: null,
-    system: "mac", // can be 'vcgencmd', 'mac' or 'cec'
+    system: "vcgencmd", // can be 'vcgencmd', 'mac' or 'cec'
   },
 
   lastScoreDetected: null,
