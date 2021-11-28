@@ -45,7 +45,7 @@ module.exports = NodeHelper.create({
         },
         status: async () => {
           const { stdout } = await exec("echo 'pow 0' | cec-client -s -d 1");
-          return stdout.includes("4");
+          return stdout.includes("power status: on");
         },
       },
     ];
