@@ -76,7 +76,7 @@ module.exports = NodeHelper.create({
     this.isMonitorOn((result) => {
       if (!result) {
         this.currentSystem
-          .deactivate()
+          .activate()
           .then((result) => {
             Log.info("MMM-MotionDetector: monitor has been activated.");
           })
