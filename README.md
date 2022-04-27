@@ -27,8 +27,11 @@ let config = {
 
 ### Raspberry Pi OS
 
-Starting with Raspberry Pi OS released on 2022-01-28 you have to enable the legacy camera mode.
-Raspberry Pi OS from 2021-10-30 will probably not work at all.
+Due to some changes on chromium and raspiOS (see https://github.com/rejas/MMM-MotionDetector/issues/56) the [legacy raspios](https://www.raspberrypi.com/news/new-old-functionality-with-raspberry-pi-os-legacy/) is needed.
+
+Any help getting this module run on the default raspiOS is greatly appreciated!
+
+Some people had success with enabling the legacy camera mode in the default raspiOS, but this is not a 100% confirmed:
 
 ```
 sudo raspi-config
