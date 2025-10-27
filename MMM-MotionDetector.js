@@ -2,6 +2,7 @@
 Module.register("MMM-MotionDetector", {
   defaults: {
     captureIntervalTime: 1000, // 1 second
+    platform: "default",
     scoreThreshold: 20,
     timeout: 120000, // 2 minutes,
     deviceId: null,
@@ -54,6 +55,8 @@ Module.register("MMM-MotionDetector", {
     this.lastTimeMotionDetected = new Date();
     this.lastTimePoweredOff = new Date();
     this.timeStarted = new Date().getTime();
+
+    this.sendSocketNotification("CONFIG", this.config);
 
     // make sure that the monitor is on when starting
     this.sendSocketNotification("ACTIVATE_MONITOR");
