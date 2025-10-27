@@ -2,14 +2,14 @@
 
 case "$1" in
   on)
-    DISPLAY=:0 xset dpms force on
+    /usr/bin/wlr-randr --output HDMI-A-1 --on
     ;;
   off)
-    DISPLAY=:0 xset dpms force off
+    /usr/bin/wlr-randr --output HDMI-A-1 --off
     ;;
   status)
-    status=$(DISPLAY=:0 xset q | grep "Monitor is" | awk '{print $3}')
-    if [ "$status" = "On" ]; then
+    # Check if HDMI-A-1 is enabled
+    if /usr/bin/wlr-randr | grep -A 5 "HDMI-A-1" | grep -q "Enabled: yes"; then
       echo "display_power=1"
     else
       echo "display_power=0"
