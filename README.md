@@ -17,7 +17,7 @@ Accessing your (web)cam requires to have the client run on localhost or a HTTPS 
 The default value in your MagicMirror config.js is already `localhost` so most users shouldn't be affected.
 
 Just in case you still have problems (like [here](https://github.com/rejas/MMM-MotionDetector/issues/6)) check your config
-and see if you can solve it by outcommenting the ip-address under
+and see if you can solve it by uncommenting the ip-address under
 
 ```JavaScript
 let config = {
@@ -27,7 +27,7 @@ let config = {
 
 ### Raspberry Pi OS
 
-Due to some changes on chromium and raspiOS (see https://github.com/rejas/MMM-MotionDetector/issues/56) the [legacy raspios](https://www.raspberrypi.com/news/new-old-functionality-with-raspberry-pi-os-legacy/) is needed.
+Due to some changes on chromium and raspiOS (see https://github.com/rejas/MMM-MotionDetector/issues/56) the [legacy raspiOS](https://www.raspberrypi.com/news/new-old-functionality-with-raspberry-pi-os-legacy/) is needed.
 
 Any help getting this module run on the default raspiOS is greatly appreciated!
 
@@ -74,7 +74,7 @@ To use this module, add it to the modules array in the `config/config.js` file:
 modules: [
   {
     module: "MMM-MotionDetector",
-    position: "top_left", // Optional. This can be any of the regions. Displays debug informations.
+    position: "top_left", // Optional. This can be any of the regions. Displays debug information.
     config: {
       // The config property is optional.
       // See 'Configuration options' for more information.
@@ -116,7 +116,7 @@ routes.json
   "routes": [
     {
       "route": "/mirror", // any path you like
-      "address": "http://localhost:8080" // adrress of MagicMirror
+      "address": "http://localhost:8080" // address of MagicMirror
     }
   ]
 }
@@ -167,4 +167,4 @@ As you are bypassing browser security with this workaround you may want to add s
 Many thanks to
 
 - [alexyak](https://github.com/alexyak/motiondetector) for the original module code
-- [lonekorean](https://github.com/lonekorean/diff-cam-engine/) for the diffcam engine code.
+- [lonekorean](https://github.com/lonekorean/diff-cam-engine/) for the diff-cam-engine code.

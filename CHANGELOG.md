@@ -35,7 +35,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [1.2.1](https://github.com/rejas/MMM-MotionDetector/compare/v1.2.0...v1.2.1) - 2019-03-02
 
-- Added eslint codestyles
+- Added eslint code styles
 
 ## [1.2.0](https://github.com/rejas/MMM-MotionDetector/compare/v1.1.0...v1.2.0) - 2019-03-01
 
@@ -44,7 +44,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [1.1.0](https://github.com/rejas/MMM-MotionDetector/compare/v1.0.0...v1.1.0) - 2018-11-01
 
-- Switched from tvservice to vgcencmd. Module can now be used with vc4-kms-v3d and vc4-fkms-v3d drivers.
+- Switched from tvservice to vcgencmd. Module can now be used with vc4-kms-v3d and vc4-fkms-v3d drivers.
 
 ## [1.0.0](https://github.com/rejas/MMM-MotionDetector/releases/tag/v1.0.0) - 2018-07-20
 
