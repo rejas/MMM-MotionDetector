@@ -6,7 +6,7 @@ Just clone the module into your MagicMirror modules folder.
 
 Assuming you are in your MagicMirror directory execute these commands:
 
-```
+```shell
 cd modules
 git clone https://github.com/rejas/MMM-MotionDetector.git
 ```
@@ -33,13 +33,13 @@ Any help getting this module run on the default raspiOS is greatly appreciated!
 
 Some people had success with enabling the legacy camera mode in the default raspiOS, but this is not a 100% confirmed:
 
-```
+```shell
 sudo raspi-config
 ```
 
 Then go to
 
-```
+```shell
 3 Interface Options -> I1 Legacy Camera
 ```
 
@@ -78,8 +78,8 @@ modules: [
     config: {
       // The config property is optional.
       // See 'Configuration options' for more information.
-    },
-  },
+    }
+  }
 ];
 ```
 
