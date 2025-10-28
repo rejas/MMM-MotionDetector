@@ -6,6 +6,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### [develop] - unreleased
 
+- Added new "platform" option to specify which platform to use.
+
 ### [1.6.0] - 2020-07-05
 
 - Allow disabling the monitor-functionality and just get the motion detection
