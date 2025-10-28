@@ -66,9 +66,8 @@ module.exports = NodeHelper.create({
   /**
    *
    * @param notification
-   * @param payload
    */
-  socketNotificationReceived (notification, payload) {
+  socketNotificationReceived (notification) {
     if (notification === "ACTIVATE_MONITOR") {
       Log.info("MMM-MotionDetector: activating monitor.");
       this.activateMonitor();

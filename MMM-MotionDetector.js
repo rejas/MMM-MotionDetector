@@ -1,4 +1,4 @@
-/* global DiffCamEngine */
+/* global DiffCamEngine, Log, Module, moment */
 Module.register("MMM-MotionDetector", {
   defaults: {
     captureIntervalTime: 1000, // 1 second
