@@ -3,24 +3,25 @@ const exec = require("child_process").exec;
 const Log = require("../../js/logger");
 
 module.exports = NodeHelper.create({
+
   /**
    *
    */
-  start: function () {
-    this.isMonitorOn(function (result) {
-      Log.info("MMM-MotionDetector: monitor is " + (result ? "ON" : "OFF") + ".");
+  start () {
+    this.isMonitorOn((result) => {
+      Log.info(`MMM-MotionDetector: monitor is ${result ? "ON" : "OFF"}.`);
     });
   },
 
   /**
    *
    */
-  activateMonitor: function () {
-    this.isMonitorOn(function (result) {
+  activateMonitor () {
+    this.isMonitorOn((result) => {
       if (!result) {
-        exec("vcgencmd display_power 1", function (err, out, code) {
+        exec("vcgencmd display_power 1", (err, out, code) => {
           if (err) {
-            Log.error("MMM-MotionDetector: error activating monitor: " + code);
+            Log.error(`MMM-MotionDetector: error activating monitor: ${code}`);
           } else {
             Log.info("MMM-MotionDetector: monitor has been activated.");
           }
@@ -32,12 +33,12 @@ module.exports = NodeHelper.create({
   /**
    *
    */
-  deactivateMonitor: function () {
-    this.isMonitorOn(function (result) {
+  deactivateMonitor () {
+    this.isMonitorOn((result) => {
       if (result) {
-        exec("vcgencmd display_power 0", function (err, out, code) {
+        exec("vcgencmd display_power 0", (err, out, code) => {
           if (err) {
-            Log.error("MMM-MotionDetector: error deactivating monitor: " + code);
+            Log.error(`MMM-MotionDetector: error deactivating monitor: ${code}`);
           } else {
             Log.info("MMM-MotionDetector: monitor has been deactivated.");
           }
@@ -50,14 +51,14 @@ module.exports = NodeHelper.create({
    *
    * @param resultCallback
    */
-  isMonitorOn: function (resultCallback) {
-    exec("vcgencmd display_power", function (err, out, code) {
+  isMonitorOn (resultCallback) {
+    exec("vcgencmd display_power", (err, out, code) => {
       if (err) {
-        Log.error("MMM-MotionDetector: error calling monitor status: " + code);
+        Log.error(`MMM-MotionDetector: error calling monitor status: ${code}`);
         return;
       }
 
-      Log.info("MMM-MotionDetector: monitor status is " + out);
+      Log.info(`MMM-MotionDetector: monitor status is ${out}`);
       resultCallback(out.includes("=1"));
     });
   },
@@ -65,9 +66,8 @@ module.exports = NodeHelper.create({
   /**
    *
    * @param notification
-   * @param payload
    */
-  socketNotificationReceived: function (notification, payload) {
+  socketNotificationReceived (notification) {
     if (notification === "ACTIVATE_MONITOR") {
       Log.info("MMM-MotionDetector: activating monitor.");
       this.activateMonitor();
@@ -76,5 +76,5 @@ module.exports = NodeHelper.create({
       Log.info("MMM-MotionDetector: deactivating monitor.");
       this.deactivateMonitor();
     }
-  },
+  }
 });
