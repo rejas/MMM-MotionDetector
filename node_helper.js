@@ -9,7 +9,7 @@ module.exports = NodeHelper.create({
    */
   start () {
     this.isMonitorOn((result) => {
-      Log.info(`MMM-MotionDetector: monitor is ${result ? "ON" : "OFF"}.`);
+      Log.info(`monitor is ${result ? "ON" : "OFF"}.`);
     });
   },
 
@@ -21,9 +21,9 @@ module.exports = NodeHelper.create({
       if (!result) {
         exec("vcgencmd display_power 1", (err, out, code) => {
           if (err) {
-            Log.error(`MMM-MotionDetector: error activating monitor: ${code}`);
+            Log.error(`error activating monitor: ${code}`);
           } else {
-            Log.info("MMM-MotionDetector: monitor has been activated.");
+            Log.info("monitor has been activated.");
           }
         });
       }
@@ -38,9 +38,9 @@ module.exports = NodeHelper.create({
       if (result) {
         exec("vcgencmd display_power 0", (err, out, code) => {
           if (err) {
-            Log.error(`MMM-MotionDetector: error deactivating monitor: ${code}`);
+            Log.error(`error deactivating monitor: ${code}`);
           } else {
-            Log.info("MMM-MotionDetector: monitor has been deactivated.");
+            Log.info("monitor has been deactivated.");
           }
         });
       }
@@ -54,11 +54,11 @@ module.exports = NodeHelper.create({
   isMonitorOn (resultCallback) {
     exec("vcgencmd display_power", (err, out, code) => {
       if (err) {
-        Log.error(`MMM-MotionDetector: error calling monitor status: ${code}`);
+        Log.error(`error calling monitor status: ${code}`);
         return;
       }
 
-      Log.info(`MMM-MotionDetector: monitor status is ${out}`);
+      Log.info(`monitor status is ${out}`);
       resultCallback(out.includes("=1"));
     });
   },
@@ -69,11 +69,11 @@ module.exports = NodeHelper.create({
    */
   socketNotificationReceived (notification, payload) {
     if (notification === "ACTIVATE_MONITOR") {
-      Log.info("MMM-MotionDetector: activating monitor.");
+      Log.info("activating monitor.");
       this.activateMonitor();
     }
     if (notification === "DEACTIVATE_MONITOR") {
-      Log.info("MMM-MotionDetector: deactivating monitor, percentage off: " + payload.percentageOff);
+      Log.info("deactivating monitor, percentage off: " + payload.percentageOff);
       this.deactivateMonitor();
     }
   }
