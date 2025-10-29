@@ -7,7 +7,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [develop](https://github.com/rejas/MMM-MotionDetector/compare/v1.6.0...develop) - unreleased
 
 - Update linting (#61)
--
+- Update logging (#62)
 
 ## [1.6.0](https://github.com/rejas/MMM-MotionDetector/compare/v1.5.0...v1.6.0) - 2020-07-05
 
