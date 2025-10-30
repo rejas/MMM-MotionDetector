@@ -1,6 +1,7 @@
 const NodeHelper = require("node_helper");
 const exec = require("child_process").exec;
 const Log = require("../../js/logger");
+const path = require("path");
 
 module.exports = NodeHelper.create({
 
@@ -8,18 +9,29 @@ module.exports = NodeHelper.create({
    *
    */
   start () {
+    this.config = null;
     this.isMonitorOn((result) => {
       Log.info(`monitor is ${result ? "ON" : "OFF"}.`);
     });
   },
 
   /**
+   * Get the command script path based on platform option
+   */
+  getCommandScript: function () {
+    const platform = this.config?.platform || "x11";
+    const scriptPath = path.join(__dirname, `monitor-commands-${platform}.sh`);
+    return scriptPath;
+  },
+
+  /**
    *
    */
   activateMonitor () {
+    const scriptPath = this.getCommandScript();
     this.isMonitorOn((result) => {
       if (!result) {
-        exec("vcgencmd display_power 1", (err, out, code) => {
+        exec(`bash ${scriptPath} on`, function (err, out, code) {
           if (err) {
             Log.error(`error activating monitor: ${code}`);
           } else {
@@ -34,9 +46,10 @@ module.exports = NodeHelper.create({
    *
    */
   deactivateMonitor () {
+    const scriptPath = this.getCommandScript();
     this.isMonitorOn((result) => {
       if (result) {
-        exec("vcgencmd display_power 0", (err, out, code) => {
+        exec(`bash ${scriptPath} off`, function (err, out, code) {
           if (err) {
             Log.error(`error deactivating monitor: ${code}`);
           } else {
@@ -52,22 +65,27 @@ module.exports = NodeHelper.create({
    * @param resultCallback
    */
   isMonitorOn (resultCallback) {
-    exec("vcgencmd display_power", (err, out, code) => {
+    const scriptPath = this.getCommandScript();
+    exec(`bash ${scriptPath} status`, function (err, out, code) {
       if (err) {
         Log.error(`error calling monitor status: ${code}`);
         return;
       }
 
       Log.info(`monitor status is ${out}`);
-      resultCallback(out.includes("=1"));
+      resultCallback(out.includes("=1") || out.trim() === "on");
     });
   },
 
   /**
    *
    * @param notification
+   * @param payload
    */
   socketNotificationReceived (notification, payload) {
+    if (notification === "CONFIG" && payload) {
+      this.config = payload;
+    }
     if (notification === "ACTIVATE_MONITOR") {
       Log.info("activating monitor.");
       this.activateMonitor();
