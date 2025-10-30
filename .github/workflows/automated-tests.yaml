@@ -31,4 +31,6 @@ jobs:
         run: node --run test:spelling
       - name: Check linting
         run: node --run lint
-      - run: echo "🍏 This job's status is ${{ job.status }}."
+      - name: Report status
+        if: always()
+        run: echo "🍏 This job's status is ${{ job.status }}."
