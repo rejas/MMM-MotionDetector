@@ -83,6 +83,7 @@ module.exports = NodeHelper.create({
   socketNotificationReceived (notification, payload) {
     if (notification === "CONFIG" && payload) {
       this.config = payload;
+      Log.info("received config: " + this.config);
     }
     if (notification === "ACTIVATE_MONITOR") {
       Log.info("activating monitor.");
