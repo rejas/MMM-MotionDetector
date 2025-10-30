@@ -1,4 +1,4 @@
-const DiffCamEngine = (function () {
+window.DiffCamEngine = (function () {
   let stream; // stream obtained from webcam
   let video; // shows stream
   let deviceId;

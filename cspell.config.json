@@ -1,0 +1,20 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "words": [
+    "alexyak",
+    "fkms",
+    "labwc",
+    "lonekorean",
+    "motiondetector",
+    "proxyserver",
+    "randr",
+    "raspi",
+    "raspiOS",
+    "rejas",
+    "tvservice",
+    "vcgencmd"
+  ],
+  "ignorePaths": ["node_modules/**"],
+  "dictionaries": ["node"]
+}

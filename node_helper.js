@@ -4,75 +4,73 @@ const Log = require("../../js/logger");
 const path = require("path");
 
 module.exports = NodeHelper.create({
+
   /**
    *
    */
-  start: function () {
-    this.config = null;
-    this.isMonitorOn(function (result) {
-      Log.info("MMM-MotionDetector: monitor is " + (result ? "ON" : "OFF") + ".");
-    });
+  async start () {
+    this.platform = null;
+    await this.isMonitorOn();
   },
 
   /**
    * Get the command script path based on platform option
    */
   getCommandScript: function () {
-    const platform = this.config?.platform || "default";
-    const scriptPath = path.join(__dirname, `monitor-commands-${platform}.sh`);
-    return scriptPath;
+    const platform = this.platform || "x11";
+    return path.join(__dirname, `monitor-commands-${platform}.sh`);
   },
 
   /**
    *
    */
-  activateMonitor: function () {
+  async activateMonitor () {
     const scriptPath = this.getCommandScript();
-    this.isMonitorOn(function (result) {
-      if (!result) {
-        exec(`bash ${scriptPath} on`, function (err, out, code) {
-          if (err) {
-            Log.error("MMM-MotionDetector: error activating monitor: " + code);
-          } else {
-            Log.info("MMM-MotionDetector: monitor has been activated.");
-          }
-        });
-      }
-    });
+    const isMonitorOn = await this.isMonitorOn();
+    if (!isMonitorOn) {
+      exec(`bash ${scriptPath} on`, function (err, out, code) {
+        if (err) {
+          Log.error(`error activating monitor: ${code}`);
+        } else {
+          Log.info("monitor has been activated.");
+        }
+      });
+    }
   },
 
   /**
    *
    */
-  deactivateMonitor: function () {
+  async deactivateMonitor () {
     const scriptPath = this.getCommandScript();
-    this.isMonitorOn(function (result) {
-      if (result) {
-        exec(`bash ${scriptPath} off`, function (err, out, code) {
-          if (err) {
-            Log.error("MMM-MotionDetector: error deactivating monitor: " + code);
-          } else {
-            Log.info("MMM-MotionDetector: monitor has been deactivated.");
-          }
-        });
-      }
-    });
+    const isMonitorOn = await this.isMonitorOn();
+    if (isMonitorOn) {
+      exec(`bash ${scriptPath} off`, function (err, out, code) {
+        if (err) {
+          Log.error(`error deactivating monitor: ${code}`);
+        } else {
+          Log.info("monitor has been deactivated.");
+        }
+      });
+    }
   },
 
   /**
-   *
-   * @param resultCallback
+   * @returns {Promise<boolean>}
    */
-  isMonitorOn: function (resultCallback) {
+  async isMonitorOn () {
     const scriptPath = this.getCommandScript();
-    exec(`bash ${scriptPath} status`, function (err, out, code) {
-      if (err) {
-        Log.error("MMM-MotionDetector: error calling monitor status: " + code);
-        return;
-      }
-
-      Log.info("MMM-MotionDetector: monitor status is " + out);
-      resultCallback(out.includes("=1") || out.trim() === "on");
+    return new Promise((resolve) => {
+      exec(`bash ${scriptPath} status`, function (err, out, code) {
+        if (err) {
+          Log.error(`error calling monitor status: ${code}`);
+          resolve(false);
+          return;
+        }
+        const result = out.includes("=1") || out.trim() === "on";
+        Log.info(`monitor is ${result ? "ON" : "OFF"}.`);
+        resolve(result);
+      });
     });
   },
 
@@ -81,17 +79,18 @@ module.exports = NodeHelper.create({
    * @param notification
    * @param payload
    */
-  socketNotificationReceived: function (notification, payload) {
-    if (notification === "CONFIG" && payload) {
-      this.config = payload;
+  socketNotificationReceived (notification, payload) {
+    if (notification === "USE_PLATFORM" && payload) {
+      this.platform = payload;
+      Log.info("using platform " + this.platform +".");
     }
     if (notification === "ACTIVATE_MONITOR") {
-      Log.info("MMM-MotionDetector: activating monitor.");
+      Log.info("activating monitor.");
       this.activateMonitor();
     }
     if (notification === "DEACTIVATE_MONITOR") {
-      Log.info("MMM-MotionDetector: deactivating monitor.");
+      Log.info("deactivating monitor, percentage off: " + payload.percentageOff);
       this.deactivateMonitor();
     }
-  },
+  }
 });
