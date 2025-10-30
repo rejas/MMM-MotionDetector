@@ -48,7 +48,7 @@ Module.register("MMM-MotionDetector", {
   },
 
   start: function () {
-    Log.info("starting up");
+    Log.info("starting up for platform " + this.config.platform + ".");
 
     this.data.header = "MMM-MotionDetector";
     this.lastScoreDetected = 0;
