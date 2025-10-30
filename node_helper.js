@@ -8,9 +8,9 @@ module.exports = NodeHelper.create({
   /**
    *
    */
-  start () {
+  async start () {
     this.config = null;
-    this.isMonitorOn();
+    await this.isMonitorOn();
   },
 
   /**
@@ -25,53 +25,53 @@ module.exports = NodeHelper.create({
   /**
    *
    */
-  activateMonitor () {
+  async activateMonitor () {
     const scriptPath = this.getCommandScript();
-    this.isMonitorOn((result) => {
-      if (!result) {
-        exec(`bash ${scriptPath} on`, function (err, out, code) {
-          if (err) {
-            Log.error(`error activating monitor: ${code}`);
-          } else {
-            Log.info("monitor has been activated.");
-          }
-        });
-      }
-    });
+    const isMonitorOn = await this.isMonitorOn();
+    if (!isMonitorOn) {
+      exec(`bash ${scriptPath} on`, function (err, out, code) {
+        if (err) {
+          Log.error(`error activating monitor: ${code}`);
+        } else {
+          Log.info("monitor has been activated.");
+        }
+      });
+    }
   },
 
   /**
    *
    */
-  deactivateMonitor () {
+  async deactivateMonitor () {
     const scriptPath = this.getCommandScript();
-    this.isMonitorOn((result) => {
-      if (result) {
-        exec(`bash ${scriptPath} off`, function (err, out, code) {
-          if (err) {
-            Log.error(`error deactivating monitor: ${code}`);
-          } else {
-            Log.info("monitor has been deactivated.");
-          }
-        });
-      }
-    });
+    const isMonitorOn = await this.isMonitorOn();
+    if (isMonitorOn) {
+      exec(`bash ${scriptPath} off`, function (err, out, code) {
+        if (err) {
+          Log.error(`error deactivating monitor: ${code}`);
+        } else {
+          Log.info("monitor has been deactivated.");
+        }
+      });
+    }
   },
 
   /**
-   *
-   * @param resultCallback
+   * @returns {Promise<boolean>}
    */
-  isMonitorOn (resultCallback) {
+  async isMonitorOn () {
     const scriptPath = this.getCommandScript();
-    exec(`bash ${scriptPath} status`, function (err, out, code) {
-      if (err) {
-        Log.error(`error calling monitor status: ${code}`);
-        return;
-      }
-      const result = out.includes("=1") || out.trim() === "on";
-      Log.info(`monitor is ${result ? "ON" : "OFF"}.`);
-      resultCallback(result);
+    return new Promise((resolve) => {
+      exec(`bash ${scriptPath} status`, function (err, out, code) {
+        if (err) {
+          Log.error(`error calling monitor status: ${code}`);
+          resolve(false);
+          return;
+        }
+        const result = out.includes("=1") || out.trim() === "on";
+        Log.info(`monitor is ${result ? "ON" : "OFF"}.`);
+        resolve(result);
+      });
     });
   },
 
