@@ -9,7 +9,7 @@ module.exports = NodeHelper.create({
    *
    */
   async start () {
-    this.config = null;
+    this.platform = null;
     await this.isMonitorOn();
   },
 
@@ -17,9 +17,8 @@ module.exports = NodeHelper.create({
    * Get the command script path based on platform option
    */
   getCommandScript: function () {
-    const platform = this.config?.platform || "x11";
-    const scriptPath = path.join(__dirname, `monitor-commands-${platform}.sh`);
-    return scriptPath;
+    const platform = this.platform || "x11";
+    return path.join(__dirname, `monitor-commands-${platform}.sh`);
   },
 
   /**
@@ -81,9 +80,9 @@ module.exports = NodeHelper.create({
    * @param payload
    */
   socketNotificationReceived (notification, payload) {
-    if (notification === "CONFIG" && payload) {
-      this.config = payload;
-      Log.info("received config: " + this.config);
+    if (notification === "USE_PLATFORM" && payload) {
+      this.platform = payload;
+      Log.info("using platform " + this.platform +".");
     }
     if (notification === "ACTIVATE_MONITOR") {
       Log.info("activating monitor.");

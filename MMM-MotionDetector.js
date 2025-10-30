@@ -56,7 +56,7 @@ Module.register("MMM-MotionDetector", {
     this.lastTimePoweredOff = new Date();
     this.timeStarted = new Date().getTime();
 
-    this.sendSocketNotification("CONFIG", this.config);
+    this.sendSocketNotification("USE_PLATFORM", this.config.platform);
 
     // make sure that the monitor is on when starting
     this.sendSocketNotification("ACTIVATE_MONITOR");
