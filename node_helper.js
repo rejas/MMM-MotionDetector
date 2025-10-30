@@ -10,9 +10,7 @@ module.exports = NodeHelper.create({
    */
   start () {
     this.config = null;
-    this.isMonitorOn((result) => {
-      Log.info(`monitor is ${result ? "ON" : "OFF"}.`);
-    });
+    this.isMonitorOn();
   },
 
   /**
@@ -71,9 +69,9 @@ module.exports = NodeHelper.create({
         Log.error(`error calling monitor status: ${code}`);
         return;
       }
-
-      Log.info(`monitor status is ${out}`);
-      resultCallback(out.includes("=1") || out.trim() === "on");
+      const result = out.includes("=1") || out.trim() === "on";
+      Log.info(`monitor is ${result ? "ON" : "OFF"}.`);
+      resultCallback(result);
     });
   },
 
