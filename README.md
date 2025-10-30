@@ -87,12 +87,13 @@ modules: [
 
 The following properties can be configured:
 
-| Option                | Description                                                                                                                                               |
-| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `captureIntervalTime` | Time in ms between capturing images for detection<br><br>**Default value:** `1000`                                                                        |
-| `scoreThreshold`      | Threshold minimum for an image to be considered significant<br><br>**Default value:** `20`                                                                |
-| `timeout`             | Time in ms after which monitor is turned off when no motion is detected<br><br>Set to -1 to never turn off the monitor<br><br>**Default value:** `120000` |
-| `deviceId`            | (optional) specify which camera to use in case multiple exist in the system.                                                                              |
+| Option                | Description                                                                                                            | Default value |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------- |
+| `captureIntervalTime` | Time in ms between capturing images for detection                                                                      | `1000`        |
+| `deviceId`            | (optional) specify which camera to use in case multiple exist in the system.                                           |               |
+| `platform`            | On what platforms this runs. <br><br>**Possible values:** `x11`, `labwc`                                               | `x11`         |
+| `scoreThreshold`      | Threshold minimum for an image to be considered significant                                                            | `20`          |
+| `timeout`             | Time in ms after which monitor is turned off when no motion is detected<br><br>Set to -1 to never turn off the monitor | `120000`      |
 
 #### How to get the deviceId
 

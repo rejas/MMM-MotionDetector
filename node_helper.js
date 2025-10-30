@@ -1,73 +1,89 @@
 const NodeHelper = require("node_helper");
 const exec = require("child_process").exec;
 const Log = require("../../js/logger");
+const path = require("path");
 
 module.exports = NodeHelper.create({
 
   /**
    *
    */
-  start () {
-    this.isMonitorOn((result) => {
-      Log.info(`monitor is ${result ? "ON" : "OFF"}.`);
-    });
+  async start () {
+    this.platform = null;
+    await this.isMonitorOn();
+  },
+
+  /**
+   * Get the command script path based on platform option
+   */
+  getCommandScript: function () {
+    const platform = this.platform || "x11";
+    return path.join(__dirname, `monitor-commands-${platform}.sh`);
   },
 
   /**
    *
    */
-  activateMonitor () {
-    this.isMonitorOn((result) => {
-      if (!result) {
-        exec("vcgencmd display_power 1", (err, out, code) => {
-          if (err) {
-            Log.error(`error activating monitor: ${code}`);
-          } else {
-            Log.info("monitor has been activated.");
-          }
-        });
-      }
-    });
+  async activateMonitor () {
+    const scriptPath = this.getCommandScript();
+    const isMonitorOn = await this.isMonitorOn();
+    if (!isMonitorOn) {
+      exec(`bash ${scriptPath} on`, function (err, out, code) {
+        if (err) {
+          Log.error(`error activating monitor: ${code}`);
+        } else {
+          Log.info("monitor has been activated.");
+        }
+      });
+    }
   },
 
   /**
    *
    */
-  deactivateMonitor () {
-    this.isMonitorOn((result) => {
-      if (result) {
-        exec("vcgencmd display_power 0", (err, out, code) => {
-          if (err) {
-            Log.error(`error deactivating monitor: ${code}`);
-          } else {
-            Log.info("monitor has been deactivated.");
-          }
-        });
-      }
-    });
+  async deactivateMonitor () {
+    const scriptPath = this.getCommandScript();
+    const isMonitorOn = await this.isMonitorOn();
+    if (isMonitorOn) {
+      exec(`bash ${scriptPath} off`, function (err, out, code) {
+        if (err) {
+          Log.error(`error deactivating monitor: ${code}`);
+        } else {
+          Log.info("monitor has been deactivated.");
+        }
+      });
+    }
   },
 
   /**
-   *
-   * @param resultCallback
+   * @returns {Promise<boolean>}
    */
-  isMonitorOn (resultCallback) {
-    exec("vcgencmd display_power", (err, out, code) => {
-      if (err) {
-        Log.error(`error calling monitor status: ${code}`);
-        return;
-      }
-
-      Log.info(`monitor status is ${out}`);
-      resultCallback(out.includes("=1"));
+  async isMonitorOn () {
+    const scriptPath = this.getCommandScript();
+    return new Promise((resolve) => {
+      exec(`bash ${scriptPath} status`, function (err, out, code) {
+        if (err) {
+          Log.error(`error calling monitor status: ${code}`);
+          resolve(false);
+          return;
+        }
+        const result = out.includes("=1") || out.trim() === "on";
+        Log.info(`monitor is ${result ? "ON" : "OFF"}.`);
+        resolve(result);
+      });
     });
   },
 
   /**
    *
    * @param notification
+   * @param payload
    */
   socketNotificationReceived (notification, payload) {
+    if (notification === "USE_PLATFORM" && payload) {
+      this.platform = payload;
+      Log.info("using platform " + this.platform +".");
+    }
     if (notification === "ACTIVATE_MONITOR") {
       Log.info("activating monitor.");
       this.activateMonitor();
