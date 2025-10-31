@@ -6,17 +6,17 @@ const path = require("path");
 module.exports = NodeHelper.create({
 
   /**
-   *
+   * @param platform
    */
-  async start () {
-    this.platform = null;
-    await this.isMonitorOn();
-  },
+  initMonitor (platform) {
+    this.platform = platform;
+    this.activateMonitor();
+    },
 
   /**
    * Get the command script path based on platform option
    */
-  getCommandScript: function () {
+  getCommandScript () {
     const platform = this.platform || "x11";
     return path.join(__dirname, `monitor-commands-${platform}.sh`);
   },
@@ -80,16 +80,16 @@ module.exports = NodeHelper.create({
    * @param payload
    */
   socketNotificationReceived (notification, payload) {
-    if (notification === "USE_PLATFORM" && payload) {
-      this.platform = payload;
-      Log.info("using platform " + this.platform +".");
+    if (notification === "INIT_MONITOR" && payload) {
+      Log.info("initialising monitor.");
+      this.initMonitor(payload);
     }
     if (notification === "ACTIVATE_MONITOR") {
       Log.info("activating monitor.");
       this.activateMonitor();
     }
     if (notification === "DEACTIVATE_MONITOR") {
-      Log.info("deactivating monitor, percentage off: " + payload.percentageOff);
+      Log.info("deactivating monitor, percentage off: " + payload.percentageOff + ".");
       this.deactivateMonitor();
     }
   }
