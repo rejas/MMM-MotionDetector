@@ -10,9 +10,9 @@ case "$1" in
   status)
     # Check if display is sleeping
     if ioreg -n IODisplayWrangler | grep -q '"IOPowerManagement".*"CurrentPowerState"=3'; then
-      echo "display_power=1"
+      echo "ON"
     else
-      echo "display_power=0"
+      echo "OFF"
     fi
     ;;
   *)

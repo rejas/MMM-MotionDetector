@@ -67,9 +67,8 @@ module.exports = NodeHelper.create({
           resolve(false);
           return;
         }
-        const result = out.includes("=1") || out.trim() === "on";
-        Log.info(`monitor is ${result ? "ON" : "OFF"}.`);
-        resolve(result);
+        Log.info(`monitor is ${ out.trim()}`);
+        resolve(out.trim() === "ON");
       });
     });
   },

@@ -10,9 +10,9 @@ case "$1" in
   status)
     # Check if HDMI-A-1 is enabled
     if /usr/bin/wlr-randr | grep -A 5 "HDMI-A-1" | grep -q "Enabled: yes"; then
-      echo "display_power=1"
+      echo "ON"
     else
-      echo "display_power=0"
+      echo "OFF"
     fi
     ;;
   *)
