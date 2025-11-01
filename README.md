@@ -59,13 +59,6 @@ If you want to use the wired PI-camera follow these steps provided by [@rev138](
 
 Another tutorial on how to enable the PI-camera in the browser can be found [in this blog post](https://reprage.com/post/pi-camera-module-in-the-browser).
 
-### Mac support
-
-Thanks to [3vidar](https://github.com/3vidar) you can also use this module on a Mac.
-For now the code only resides in the branch called "mac" in this git repo.
-
-I hope to find the time to generalize it and have it in the mainline too.
-
 ## Configuration
 
 To use this module, add it to the modules array in the `config/config.js` file:
@@ -91,7 +84,7 @@ The following properties can be configured:
 | --------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------- |
 | `captureIntervalTime` | Time in ms between capturing images for detection                                                                      | `1000`        |
 | `deviceId`            | (optional) specify which camera to use in case multiple exist in the system.                                           |               |
-| `platform`            | On what platforms this runs. <br><br>**Possible values:** `x11`, `labwc`                                               | `x11`         |
+| `platform`            | On what platforms this runs. <br><br>**Possible values:** `cec` (untested), `labwc`,`mac-intel`, `mac-intel`, `x11`    | `x11`         |
 | `scoreThreshold`      | Threshold minimum for an image to be considered significant                                                            | `20`          |
 | `timeout`             | Time in ms after which monitor is turned off when no motion is detected<br><br>Set to -1 to never turn off the monitor | `120000`      |
 

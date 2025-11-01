@@ -56,10 +56,7 @@ Module.register("MMM-MotionDetector", {
     this.lastTimePoweredOff = new Date();
     this.timeStarted = new Date().getTime();
 
-    this.sendSocketNotification("USE_PLATFORM", this.config.platform);
-
-    // make sure that the monitor is on when starting
-    this.sendSocketNotification("ACTIVATE_MONITOR");
+    this.sendSocketNotification("INIT_MONITOR", this.config.platform);
 
     const canvas = document.createElement("canvas");
     const video = document.createElement("video");
@@ -93,6 +90,7 @@ Module.register("MMM-MotionDetector", {
           this.sendSocketNotification("MOTION_DETECTED", { score: score });
           this.sendNotification("MOTION_DETECTED", { score: score });
           if (this.poweredOff) {
+            Log.info("Percentage of uptime powered off: " + this.percentagePoweredOff);
             this.sendSocketNotification("ACTIVATE_MONITOR");
             this.poweredOffTime = this.poweredOffTime + (currentDate.getTime() - this.lastTimePoweredOff.getTime());
             this.poweredOff = false;
@@ -101,7 +99,7 @@ Module.register("MMM-MotionDetector", {
         } else {
           const time = currentDate.getTime() - this.lastTimeMotionDetected.getTime();
           if (this.config.timeout >= 0 && time > this.config.timeout && !this.poweredOff) {
-            this.sendSocketNotification("DEACTIVATE_MONITOR", { percentageOff: this.percentagePoweredOff });
+            this.sendSocketNotification("DEACTIVATE_MONITOR");
             this.lastTimePoweredOff = currentDate;
             this.poweredOff = true;
           }
