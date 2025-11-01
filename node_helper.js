@@ -67,7 +67,7 @@ module.exports = NodeHelper.create({
           resolve(false);
           return;
         }
-        Log.info(`monitor is ${ out.trim()}`);
+        Log.info(`monitor is currently ${ out.trim()}.`);
         resolve(out.trim() === "ON");
       });
     });
@@ -88,7 +88,7 @@ module.exports = NodeHelper.create({
       this.activateMonitor();
     }
     if (notification === "DEACTIVATE_MONITOR") {
-      Log.info("deactivating monitor, percentage off: " + payload.percentageOff + ".");
+      Log.info("deactivating monitor");
       this.deactivateMonitor();
     }
   }
