@@ -84,7 +84,7 @@ The following properties can be configured:
 | --------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------- |
 | `captureIntervalTime` | Time in ms between capturing images for detection                                                                      | `1000`        |
 | `deviceId`            | (optional) specify which camera to use in case multiple exist in the system.                                           |               |
-| `platform`            | On what platforms this runs. <br><br>**Possible values:** `x11`, `labwc`, `mac-intel`                                  | `x11`         |
+| `platform`            | On what platforms this runs. <br><br>**Possible values:** `cec` (untested), `labwc`,`mac-intel`, `mac-intel`, `x11`    | `x11`         |
 | `scoreThreshold`      | Threshold minimum for an image to be considered significant                                                            | `20`          |
 | `timeout`             | Time in ms after which monitor is turned off when no motion is detected<br><br>Set to -1 to never turn off the monitor | `120000`      |
 
