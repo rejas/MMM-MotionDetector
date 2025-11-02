@@ -9,6 +9,8 @@ Assuming you are in your MagicMirror directory execute these commands:
 ```
 cd modules
 git clone https://github.com/rejas/MMM-MotionDetector.git
+cd MMM-MotionDetector
+npm install
 ```
 
 ## Requirements
@@ -93,6 +95,7 @@ The following properties can be configured:
 | `scoreThreshold`      | Threshold minimum for an image to be considered significant<br><br>**Default value:** `20`                                                                |
 | `timeout`             | Time in ms after which monitor is turned off when no motion is detected<br><br>Set to -1 to never turn off the monitor<br><br>**Default value:** `120000` |
 | `deviceId`            | (optional) specify which camera to use in case multiple exist in the system.                                                                              |
+| `additionalNotification` | An additional notification to send to other modules. Any value other than false will be the notification.<br><br>**Default value:** `false`                |
 
 #### How to get the deviceId
 
@@ -157,12 +160,18 @@ As you are bypassing browser security with this workaround you may want to add s
 
 ## Notifications send
 
-| Notification         | Payload       | Description                                                             |
-| -------------------- | ------------- | ----------------------------------------------------------------------- |
-| `MOTION_DETECTED`    | score         | score calculated by the diff-cam-engine, 0 or greater                   |
-| `DEACTIVATE_MONITOR` | percentageOff | percentage of time the monitor was deactivated since the module started |
+| Notification         | Payload       | Description                                                                               |
+| -------------------- | ------------- | ----------------------------------------------------------------------------------------- |
+| `MOTION_DETECTED`    | score         | score calculated by the diff-cam-engine, 0 or greater                                     |
+| `DEACTIVATE_MONITOR` | percentageOff | percentage of time the monitor was deactivated since the module started                   |
+| [User-specified]     | empty string  | A user-defined notification. (ex: `TAKE_SELFIE`, `SHOW_FRAME_1`, `LAUNCH_WARHEADS`, etc.) |
 
 ## Changelog
+
+### [1.6.1] - 2020-07-17
+
+- Separate variables for monitor control, timeout
+- User-defined notification
 
 ### [1.6.0] - 2020-07-05
 
