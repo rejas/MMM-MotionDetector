@@ -1,5 +1,5 @@
 const NodeHelper = require("node_helper");
-const exec = require("child_process").exec;
+const exec = require("util").promisify(require("child_process").exec);
 const Log = require("../../js/logger");
 const path = require("path");
 
@@ -10,7 +10,9 @@ module.exports = NodeHelper.create({
    */
   initMonitor (platform) {
     this.platform = platform;
-    this.activateMonitor();
+    this.activateMonitor()
+      .then(() => Log.info("monitor has been initially activated."))
+      .catch((result) => Log.error(`error activating monitor initially: ${result.stderr}.`));
     },
 
   /**
@@ -28,13 +30,7 @@ module.exports = NodeHelper.create({
     const scriptPath = this.getCommandScript();
     const isMonitorOn = await this.isMonitorOn();
     if (!isMonitorOn) {
-      exec(`bash ${scriptPath} on`, function (err, out, code) {
-        if (err) {
-          Log.error(`error activating monitor: ${code}`);
-        } else {
-          Log.info("monitor has been activated.");
-        }
-      });
+      await exec(`bash ${scriptPath} on`);
     }
   },
 
@@ -45,13 +41,7 @@ module.exports = NodeHelper.create({
     const scriptPath = this.getCommandScript();
     const isMonitorOn = await this.isMonitorOn();
     if (isMonitorOn) {
-      exec(`bash ${scriptPath} off`, function (err, out, code) {
-        if (err) {
-          Log.error(`error deactivating monitor: ${code}`);
-        } else {
-          Log.info("monitor has been deactivated.");
-        }
-      });
+      await exec(`bash ${scriptPath} off`);
     }
   },
 
@@ -60,17 +50,9 @@ module.exports = NodeHelper.create({
    */
   async isMonitorOn () {
     const scriptPath = this.getCommandScript();
-    return new Promise((resolve) => {
-      exec(`bash ${scriptPath} status`, function (err, out, code) {
-        if (err) {
-          Log.error(`error calling monitor status: ${code}`);
-          resolve(false);
-          return;
-        }
-        Log.info(`monitor is currently ${ out.trim()}.`);
-        resolve(out.trim() === "ON");
-      });
-    });
+    const result = await exec(`bash ${scriptPath} status`);
+    Log.info(`monitor is currently ${ result.stdout.trim()}.`);
+    return result.stdout.trim() === "ON";
   },
 
   /**
@@ -85,11 +67,15 @@ module.exports = NodeHelper.create({
     }
     if (notification === "ACTIVATE_MONITOR") {
       Log.info("activating monitor.");
-      this.activateMonitor();
+      this.activateMonitor()
+        .then(() => Log.info("monitor has been activated."))
+        .catch((result) => Log.error(`error activating monitor: ${result.stderr}`));
     }
     if (notification === "DEACTIVATE_MONITOR") {
       Log.info("deactivating monitor");
-      this.deactivateMonitor();
+      this.deactivateMonitor()
+        .then(() => Log.info("monitor has been deactivated."))
+        .catch((result) => Log.error(`error deactivating monitor: ${result.stderr}`));
     }
   }
 });
