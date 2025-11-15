@@ -1,6 +1,6 @@
 {
   "name": "mmm-motiondetector",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "a motion detector module for MagicMirror",
   "author": "rejas@github.com",
   "license": "MIT",

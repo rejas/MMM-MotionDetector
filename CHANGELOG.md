@@ -4,13 +4,16 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [develop](https://github.com/rejas/MMM-MotionDetector/compare/v1.6.0...develop) - unreleased
+## [develop](https://github.com/rejas/MMM-MotionDetector/compare/v1.7.0...develop) - unreleased
+
+## [1.7.0](https://github.com/rejas/MMM-MotionDetector/compare/v1.6.0...v1.7.0) - 2025-11-15
 
 - Update linting (#61)
 - Update logging (#62)
 - Added github actions for testing (#63)
 - Added platform config option incl mac (#64, #65)
 - Use async calls everywhere in module (#66)
+- Update dependencies
 
 ## [1.6.0](https://github.com/rejas/MMM-MotionDetector/compare/v1.5.0...v1.6.0) - 2020-07-05
 
