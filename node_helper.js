@@ -1,65 +1,58 @@
 const NodeHelper = require("node_helper");
-const exec = require("child_process").exec;
+const exec = require("util").promisify(require("child_process").exec);
 const Log = require("../../js/logger");
+const path = require("path");
 
 module.exports = NodeHelper.create({
+
   /**
-   *
+   * @param platform
    */
-  start: function () {
-    this.isMonitorOn(function (result) {
-      Log.info("MMM-MotionDetector: monitor is " + (result ? "ON" : "OFF") + ".");
-    });
+  initMonitor (platform) {
+    this.platform = platform;
+    this.activateMonitor()
+      .then(() => Log.info("monitor has been initially activated."))
+      .catch((result) => Log.error(`error activating monitor initially: ${result.stderr}.`));
+    },
+
+  /**
+   * Get the command script path based on platform option
+   */
+  getCommandScript () {
+    const platform = this.platform || "x11";
+    return path.join(__dirname, `monitor-commands-${platform}.sh`);
   },
 
   /**
    *
    */
-  activateMonitor: function () {
-    this.isMonitorOn(function (result) {
-      if (!result) {
-        exec("vcgencmd display_power 1", function (err, out, code) {
-          if (err) {
-            Log.error("MMM-MotionDetector: error activating monitor: " + code);
-          } else {
-            Log.info("MMM-MotionDetector: monitor has been activated.");
-          }
-        });
-      }
-    });
+  async activateMonitor () {
+    const scriptPath = this.getCommandScript();
+    const isMonitorOn = await this.isMonitorOn();
+    if (!isMonitorOn) {
+      await exec(`bash ${scriptPath} on`);
+    }
   },
 
   /**
    *
    */
-  deactivateMonitor: function () {
-    this.isMonitorOn(function (result) {
-      if (result) {
-        exec("vcgencmd display_power 0", function (err, out, code) {
-          if (err) {
-            Log.error("MMM-MotionDetector: error deactivating monitor: " + code);
-          } else {
-            Log.info("MMM-MotionDetector: monitor has been deactivated.");
-          }
-        });
-      }
-    });
+  async deactivateMonitor () {
+    const scriptPath = this.getCommandScript();
+    const isMonitorOn = await this.isMonitorOn();
+    if (isMonitorOn) {
+      await exec(`bash ${scriptPath} off`);
+    }
   },
 
   /**
-   *
-   * @param resultCallback
+   * @returns {Promise<boolean>}
    */
-  isMonitorOn: function (resultCallback) {
-    exec("vcgencmd display_power", function (err, out, code) {
-      if (err) {
-        Log.error("MMM-MotionDetector: error calling monitor status: " + code);
-        return;
-      }
-
-      Log.info("MMM-MotionDetector: monitor status is " + out);
-      resultCallback(out.includes("=1"));
-    });
+  async isMonitorOn () {
+    const scriptPath = this.getCommandScript();
+    const result = await exec(`bash ${scriptPath} status`);
+    Log.info(`monitor is currently ${ result.stdout.trim()}.`);
+    return result.stdout.trim() === "ON";
   },
 
   /**
@@ -67,14 +60,22 @@ module.exports = NodeHelper.create({
    * @param notification
    * @param payload
    */
-  socketNotificationReceived: function (notification, payload) {
+  socketNotificationReceived (notification, payload) {
+    if (notification === "INIT_MONITOR" && payload) {
+      Log.info("initialising monitor.");
+      this.initMonitor(payload);
+    }
     if (notification === "ACTIVATE_MONITOR") {
-      Log.info("MMM-MotionDetector: activating monitor.");
-      this.activateMonitor();
+      Log.info("activating monitor.");
+      this.activateMonitor()
+        .then(() => Log.info("monitor has been activated."))
+        .catch((result) => Log.error(`error activating monitor: ${result.stderr}`));
     }
     if (notification === "DEACTIVATE_MONITOR") {
-      Log.info("MMM-MotionDetector: deactivating monitor.");
-      this.deactivateMonitor();
+      Log.info("deactivating monitor");
+      this.deactivateMonitor()
+        .then(() => Log.info("monitor has been deactivated."))
+        .catch((result) => Log.error(`error deactivating monitor: ${result.stderr}`));
     }
-  },
+  }
 });

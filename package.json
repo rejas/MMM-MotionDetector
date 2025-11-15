@@ -1,16 +1,12 @@
 {
   "name": "mmm-motiondetector",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "a motion detector module for MagicMirror",
   "author": "rejas@github.com",
   "license": "MIT",
   "bugs": "https://github.com/rejas/MMM-MotionDetector/issues",
   "homepage": "https://github.com/rejas/MMM-MotionDetector#readme",
   "repository": "github:rejas/MMM-MotionDetector.git",
-  "scripts": {
-    "lint": "eslint --fix **/*.js",
-    "test": "eslint **/*.js"
-  },
   "keywords": [
     "magic",
     "mirror",
@@ -18,7 +14,29 @@
     "mirror",
     "motion detection"
   ],
+  "scripts": {
+    "lint": "eslint && prettier . --check",
+    "lint:fix": "eslint --fix && prettier . --write",
+    "prepare": "[ -f node_modules/.bin/husky ] && husky || echo info for developers: husky is not installed.",
+    "test": "node --run lint && node --run test:spelling",
+    "test:spelling": "cspell ."
+  },
+  "lint-staged": {
+    "*": [
+      "eslint --fix",
+      "prettier --write --ignore-unknown"
+    ]
+  },
   "devDependencies": {
-    "eslint": "^8.8.0"
+    "@eslint/js": "^9.39.1",
+    "@eslint/json": "^0.14.0",
+    "@eslint/markdown": "^7.5.1",
+    "cspell": "^9.3.1",
+    "eslint": "^9.39.1",
+    "eslint-plugin-import-x": "^4.16.1",
+    "globals": "^16.5.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.6",
+    "prettier": "^3.6.2"
   }
 }

@@ -1,0 +1,25 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "words": [
+    "alexyak",
+    "caffeinate",
+    "displaysleepnow",
+    "fkms",
+    "initialising",
+    "ioreg",
+    "labwc",
+    "lonekorean",
+    "motiondetector",
+    "pmset",
+    "proxyserver",
+    "randr",
+    "raspi",
+    "raspiOS",
+    "rejas",
+    "tvservice",
+    "vcgencmd"
+  ],
+  "ignorePaths": ["node_modules/**"],
+  "dictionaries": ["node"]
+}
