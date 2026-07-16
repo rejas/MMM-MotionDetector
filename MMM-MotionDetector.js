@@ -33,7 +33,7 @@ Module.register("MMM-MotionDetector", {
     return {
       duration: moment.duration(this.poweredOffTime).humanize(),
       lastScoreDetected: this.lastScoreDetected,
-      lastTimeMotionDetected: this.lastTimeMotionDetected.toLocaleTimeString(),
+      lastTimeMotionDetected: this.lastTimeMotionDetected ? this.lastTimeMotionDetected.toLocaleTimeString() : null,
       percentagePoweredOff: this.percentagePoweredOff,
       timeout: this.config.timeout,
       error: this.error,
