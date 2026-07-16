@@ -29,8 +29,6 @@ window.DiffCamEngine = (function () {
   let imageMimeType; // string e.g. "image/jpeg", "image/png"
   let jpegQuality; // imageMimeType:"image/jpeg" quality value between 0 and 1
 
-  let coords;
-
   /**
    *
    * @param options
@@ -237,14 +235,14 @@ window.DiffCamEngine = (function () {
 
       if (pixelDiff >= pixelDiffThreshold) {
         score++;
-        coords = calculateCoordinates(i / 4);
+        const { x, y } = calculateCoordinates(i / 4);
 
         if (includeMotionBox) {
-          motionBox = calculateMotionBox(motionBox, coords.x, coords.y);
+          motionBox = calculateMotionBox(motionBox, x, y);
         }
 
         if (includeMotionPixels) {
-          motionPixels = calculateMotionPixels(motionPixels, coords.x, coords.y);
+          motionPixels = calculateMotionPixels(motionPixels, x, y);
         }
       }
     }
@@ -278,8 +276,8 @@ window.DiffCamEngine = (function () {
   function calculateMotionBox(currentMotionBox, x, y) {
     // init motion box on demand
     let motionBox = currentMotionBox || {
-      x: { min: coords.x, max: x },
-      y: { min: coords.y, max: y },
+      x: { min: x, max: x },
+      y: { min: y, max: y },
     };
 
     motionBox.x.min = Math.min(motionBox.x.min, x);
