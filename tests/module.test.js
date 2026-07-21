@@ -124,22 +124,4 @@ describe("MMM-MotionDetector", () => {
       assert.strictEqual(typeof data.lastTimeMotionDetected, "string");
     });
   });
-
-  describe("socket notifications", () => {
-    it("forwards USER_PRESENCE to the module bus", () => {
-      const { module } = loadModule();
-
-      module.socketNotificationReceived("USER_PRESENCE", true);
-
-      assert.deepStrictEqual(module.notifications, [["notification", "USER_PRESENCE", true]]);
-    });
-
-    it("ignores unknown notifications", () => {
-      const { module } = loadModule();
-
-      module.socketNotificationReceived("SOMETHING_ELSE", true);
-
-      assert.deepStrictEqual(module.notifications, []);
-    });
-  });
 });

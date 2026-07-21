@@ -40,13 +40,6 @@ Module.register("MMM-MotionDetector", {
     };
   },
 
-  // Override socket notification handler.
-  socketNotificationReceived: function (notification, payload) {
-    if (notification === "USER_PRESENCE") {
-      this.sendNotification(notification, payload);
-    }
-  },
-
   start: function () {
     Log.info("starting up for platform " + this.config.platform + ".");
 
