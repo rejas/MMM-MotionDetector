@@ -11,31 +11,33 @@ const HELPER_PATH = path.join(__dirname, "..", "node_helper.js");
  * exists when this repository is checked out on its own, and it shells out via
  * child_process. All three are swapped out through a temporary require hook.
  * @param options.exec handler receiving the command string, returns {stdout, stderr} or throws
- * @returns {{helper: object, commands: string[], logs: object}}
+ * @returns {{helper: object, calls: object[], commands: string[], logs: object}}
  */
 function loadNodeHelper({ exec } = {}) {
   const commands = [];
+  const calls = [];
   const logs = { error: [], info: [] };
   const execHandler = exec || (() => ({ stdout: "", stderr: "" }));
 
-  // matches child_process.exec: the callback takes (error, stdout, stderr) as
-  // separate string arguments
-  const fakeExec = (command, callback) => {
-    commands.push(command);
+  // matches child_process.execFile: arguments arrive as a list and the callback
+  // takes (error, stdout, stderr) as separate string arguments
+  const fakeExecFile = (file, args, callback) => {
+    calls.push({ file, args });
+    commands.push([file, ...args].join(" "));
     try {
-      const { stdout = "", stderr = "" } = execHandler(command) || {};
+      const { stdout = "", stderr = "" } = execHandler([file, ...args].join(" ")) || {};
       callback(null, stdout, stderr);
     } catch (error) {
       callback(error);
     }
   };
 
-  // the real exec carries this symbol, and util.promisify honours it to resolve
-  // with { stdout, stderr } rather than with stdout alone. Without it the stub
-  // would only look right by accident of how it calls back.
-  fakeExec[util.promisify.custom] = (command) =>
+  // the real execFile carries this symbol, and util.promisify honours it to
+  // resolve with { stdout, stderr } rather than with stdout alone. Without it
+  // the stub would only look right by accident of how it calls back.
+  fakeExecFile[util.promisify.custom] = (file, args) =>
     new Promise((resolve, reject) => {
-      fakeExec(command, (error, stdout, stderr) => {
+      fakeExecFile(file, args, (error, stdout, stderr) => {
         if (error) {
           reject(error);
           return;
@@ -44,7 +46,7 @@ function loadNodeHelper({ exec } = {}) {
       });
     });
 
-  const fakeChildProcess = { exec: fakeExec };
+  const fakeChildProcess = { execFile: fakeExecFile };
 
   const stubs = {
     node_helper: { create: (definition) => definition },
@@ -67,7 +69,7 @@ function loadNodeHelper({ exec } = {}) {
   try {
     delete require.cache[require.resolve(HELPER_PATH)];
     const helper = require(HELPER_PATH);
-    return { helper: Object.create(helper), commands, logs };
+    return { helper: Object.create(helper), calls, commands, logs };
   } finally {
     Module._load = originalLoad;
   }

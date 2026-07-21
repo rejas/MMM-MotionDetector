@@ -45,6 +45,20 @@ describe("node_helper", () => {
       assert.match(commands[0], /sh on$/);
     });
 
+    it("passes the script path as one argument instead of a shell string", async () => {
+      const { helper, calls } = loadNodeHelper();
+
+      helper.platform = "x11";
+      await helper.activateMonitor();
+
+      // no shell parses this, so a module directory containing spaces or shell
+      // metacharacters cannot split the path or inject anything
+      assert.strictEqual(calls[0].file, "bash");
+      assert.strictEqual(calls[0].args.length, 2);
+      assert.ok(calls[0].args[0].endsWith("monitor-commands-x11.sh"));
+      assert.strictEqual(calls[0].args[1], "on");
+    });
+
     it("propagates a failing script", async () => {
       const { helper } = loadNodeHelper({
         exec: () => {

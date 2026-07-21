@@ -28,6 +28,9 @@
       "prettier --write --ignore-unknown"
     ]
   },
+  "engines": {
+    "node": "^22.22.1 || >=24"
+  },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@eslint/json": "^2.0.1",

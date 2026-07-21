@@ -1,5 +1,5 @@
 const NodeHelper = require("node_helper");
-const exec = require("util").promisify(require("child_process").exec);
+const execFile = require("util").promisify(require("child_process").execFile);
 const Log = require("../../js/logger");
 const path = require("path");
 
@@ -57,7 +57,9 @@ module.exports = NodeHelper.create({
       Log.error("cannot activate monitor, no valid platform has been configured.");
       return;
     }
-    await exec(`bash ${this.getCommandScript()} on`);
+    // execFile takes the arguments as a list, so no shell parses the path and
+    // directories containing spaces or metacharacters are handled correctly
+    await execFile("bash", [this.getCommandScript(), "on"]);
   },
 
   /**
@@ -69,7 +71,7 @@ module.exports = NodeHelper.create({
       Log.error("cannot deactivate monitor, no valid platform has been configured.");
       return;
     }
-    await exec(`bash ${this.getCommandScript()} off`);
+    await execFile("bash", [this.getCommandScript(), "off"]);
   },
 
   /**
