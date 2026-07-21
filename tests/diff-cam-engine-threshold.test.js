@@ -22,7 +22,7 @@ async function captureWith(movingPixels) {
   return engine.captures[0];
 }
 
-describe("DiffCamEngine motion box", () => {
+describe("DiffCamEngine score threshold", () => {
   it("reports a motion box once the score reaches the threshold", async () => {
     const capture = await captureWith(SCORE_THRESHOLD);
 

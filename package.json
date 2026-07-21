@@ -1,6 +1,6 @@
 {
   "name": "mmm-motiondetector",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "description": "a motion detector module for MagicMirror",
   "author": "rejas@github.com",
   "license": "MIT",
@@ -27,6 +27,9 @@
       "eslint --fix",
       "prettier --write --ignore-unknown"
     ]
+  },
+  "engines": {
+    "node": "^22.22.1 || >=24"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

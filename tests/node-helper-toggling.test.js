@@ -34,20 +34,69 @@ describe("node_helper", () => {
       assert.ok(!commands.some((command) => command.endsWith("status")));
     });
 
-    it("turns the monitor on even when it is already on", async () => {
-      // the old status check skipped the call in this case, which left the
-      // monitor asleep whenever the status script misreported
-      const { helper, commands } = loadNodeHelper({ exec: () => ({ stdout: "ON" }) });
+    it("passes the script path as one argument instead of a shell string", async () => {
+      const { helper, calls } = loadNodeHelper();
 
       helper.platform = "x11";
       await helper.activateMonitor();
 
-      assert.match(commands[0], /sh on$/);
+      // no shell parses this, so a module directory containing spaces or shell
+      // metacharacters cannot split the path or inject anything
+      assert.strictEqual(calls[0].file, "bash");
+      assert.strictEqual(calls[0].args.length, 2);
+      assert.ok(calls[0].args[0].endsWith("monitor-commands-x11.sh"));
+      assert.strictEqual(calls[0].args[1], "on");
+    });
+
+    it("applies a slow off before a later on instead of racing it", async () => {
+      const applied = [];
+      const { helper } = loadNodeHelper({
+        run: (command) => {
+          const action = command.endsWith("off") ? "off" : "on";
+          // the off script is the slow one, cec-client can take seconds
+          const delay = action === "off" ? 30 : 0;
+          return new Promise((resolve) => {
+            setTimeout(() => {
+              applied.push(action);
+              resolve({ stdout: "" });
+            }, delay);
+          });
+        },
+      });
+
+      helper.platform = "cec";
+      const off = helper.deactivateMonitor();
+      const on = helper.activateMonitor();
+      await Promise.all([off, on]);
+
+      // without queueing the fast on lands first and the slow off wins,
+      // leaving the screen dark with someone standing in front of it
+      assert.deepStrictEqual(applied, ["off", "on"]);
+    });
+
+    it("keeps queueing after a command fails", async () => {
+      let first = true;
+      const { helper, commands } = loadNodeHelper({
+        run: () => {
+          if (first) {
+            first = false;
+            throw new Error("boom");
+          }
+          return { stdout: "" };
+        },
+      });
+
+      helper.platform = "x11";
+      await assert.rejects(() => helper.activateMonitor());
+      await helper.deactivateMonitor();
+
+      assert.strictEqual(commands.length, 2);
+      assert.match(commands[1], /sh off$/);
     });
 
     it("propagates a failing script", async () => {
       const { helper } = loadNodeHelper({
-        exec: () => {
+        run: () => {
           throw new Error("vcgencmd not found");
         },
       });
@@ -102,7 +151,7 @@ describe("node_helper", () => {
 
     it("logs an error when the script fails", async () => {
       const { helper, logs } = loadNodeHelper({
-        exec: () => {
+        run: () => {
           throw new Error("boom");
         },
       });
@@ -112,6 +161,38 @@ describe("node_helper", () => {
       await flush();
 
       assert.strictEqual(logs.error.length, 1);
+    });
+
+    it("logs what the script wrote to stderr", async () => {
+      const { helper, logs } = loadNodeHelper({
+        run: () => {
+          const error = new Error("Command failed");
+          error.stderr = "vcgencmd: command not found\n";
+          throw error;
+        },
+      });
+
+      helper.platform = "x11";
+      helper.socketNotificationReceived("ACTIVATE_MONITOR");
+      await flush();
+
+      assert.match(logs.error[0], /vcgencmd: command not found/);
+    });
+
+    it("logs the message when the script could not be spawned at all", async () => {
+      const { helper, logs } = loadNodeHelper({
+        run: () => {
+          // a spawn failure never reaches the script, so it carries no stderr
+          throw new Error("spawn ENOENT");
+        },
+      });
+
+      helper.platform = "x11";
+      helper.socketNotificationReceived("DEACTIVATE_MONITOR");
+      await flush();
+
+      assert.match(logs.error[0], /spawn ENOENT/);
+      assert.doesNotMatch(logs.error[0], /undefined/);
     });
   });
 });

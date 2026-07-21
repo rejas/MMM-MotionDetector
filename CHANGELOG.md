@@ -4,7 +4,38 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [develop](https://github.com/rejas/MMM-MotionDetector/compare/v1.7.0...develop) - unreleased
+## [develop](https://github.com/rejas/MMM-MotionDetector/compare/v1.8.0...develop) - unreleased
+
+## [1.8.0](https://github.com/rejas/MMM-MotionDetector/compare/v1.7.0...v1.8.0) - 2026-07-21
+
+### Added
+
+- Unit test suite running on `node:test`, plus shellcheck and the tests in CI (#102)
+- Validation of the `platform` option, unknown values are now refused instead of silently falling back to `x11` (#99)
+- `engines` field requiring node `^22.22.1 || >=24`, matching what the dev toolchain already needs
+
+### Changed
+
+- `mac-arm` is documented as a supported platform, it always worked but the README listed `mac-intel` twice (#105)
+- The monitor scripts are run through `execFile` rather than a shell string, so an install path containing spaces works
+- Monitor commands are queued, so a slow `off` can no longer land after a later `on` and leave the screen dark
+- Dev dependencies updated to their latest versions (#104)
+
+### Fixed
+
+- `scoreThreshold` and `pixelDiffThreshold` now honour an explicit `0` instead of silently using the default, and a frame where nothing changed is no longer reported as motion (#103)
+- `motionBox` uses the same threshold comparison as `hasMotion`, so a frame can no longer count as motion without a box (#95)
+- `DiffCamEngine.stop()` releases the camera tracks and detaches its `canplay` listener, so the indicator light goes out and a late event cannot restart capturing (#97)
+- The powered off percentage includes the stretch that is currently running, it used to report the previous total at the moment of waking
+- The node helper no longer logs that the monitor was activated directly after logging that it could not be
+- Failures that never reached a script are logged with their message instead of `undefined`
+- The module renders again when no motion was ever detected (#101)
+
+### Removed
+
+- `MOTION_DETECTED` is no longer sent over the socket. It is still broadcast to other modules, but the node helper never had a handler for the socket copy (#96)
+- The `USER_PRESENCE` handler, which forwarded a notification the node helper has never sent (#107)
+- The `isMonitorOn` status check before toggling, the scripts are idempotent (#100)
 
 ## [1.7.0](https://github.com/rejas/MMM-MotionDetector/compare/v1.6.0...v1.7.0) - 2025-11-15
 

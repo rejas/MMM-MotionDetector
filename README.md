@@ -149,9 +149,9 @@ As you are bypassing browser security with this workaround you may want to add s
 
 These are broadcast to the other modules on your mirror:
 
-| Notification      | Payload            | Description                                                                 |
-| ----------------- | ------------------ | --------------------------------------------------------------------------- |
-| `MOTION_DETECTED` | `{ score: <int> }` | score calculated by the diff-cam-engine for the current frame, 0 or greater |
+| Notification      | Payload            | Description                                                                               |
+| ----------------- | ------------------ | ----------------------------------------------------------------------------------------- |
+| `MOTION_DETECTED` | `{ score: <int> }` | number of pixels the diff-cam-engine saw change in the current frame, always 1 or greater |
 
 `ACTIVATE_MONITOR` and `DEACTIVATE_MONITOR` are also sent, but only over the socket to this module's own node helper,
 which switches the monitor on and off. They carry no payload and cannot be observed by other modules.
