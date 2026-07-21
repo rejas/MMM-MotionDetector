@@ -199,7 +199,7 @@ window.DiffCamEngine = (function () {
       captureCallback({
         imageData: captureImageData,
         score: diff.score,
-        hasMotion: diff.score >= scoreThreshold,
+        hasMotion: meetsScoreThreshold(diff.score),
         motionBox: diff.motionBox,
         motionPixels: diff.motionPixels,
         getURL: function () {
@@ -252,9 +252,19 @@ window.DiffCamEngine = (function () {
 
     return {
       score: score,
-      motionBox: score >= scoreThreshold ? motionBox : undefined,
+      motionBox: meetsScoreThreshold(score) ? motionBox : undefined,
       motionPixels: motionPixels,
     };
+  }
+
+  /**
+   * Whether a score counts as motion. A score of zero means not a single pixel
+   * changed, which is never motion, not even at a scoreThreshold of zero.
+   * @param score number of pixels that exceeded pixelDiffThreshold
+   * @returns {boolean}
+   */
+  function meetsScoreThreshold(score) {
+    return score > 0 && score >= scoreThreshold;
   }
 
   /**

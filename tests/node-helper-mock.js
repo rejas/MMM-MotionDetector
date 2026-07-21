@@ -1,5 +1,6 @@
 const path = require("node:path");
 const Module = require("node:module");
+const util = require("node:util");
 
 const HELPER_PATH = path.join(__dirname, "..", "node_helper.js");
 
@@ -17,17 +18,33 @@ function loadNodeHelper({ exec } = {}) {
   const logs = { error: [], info: [] };
   const execHandler = exec || (() => ({ stdout: "", stderr: "" }));
 
-  const fakeChildProcess = {
-    exec: (command, callback) => {
-      commands.push(command);
-      try {
-        const { stdout = "", stderr = "" } = execHandler(command) || {};
-        callback(null, { stdout, stderr });
-      } catch (error) {
-        callback(error);
-      }
-    },
+  // matches child_process.exec: the callback takes (error, stdout, stderr) as
+  // separate string arguments
+  const fakeExec = (command, callback) => {
+    commands.push(command);
+    try {
+      const { stdout = "", stderr = "" } = execHandler(command) || {};
+      callback(null, stdout, stderr);
+    } catch (error) {
+      callback(error);
+    }
   };
+
+  // the real exec carries this symbol, and util.promisify honours it to resolve
+  // with { stdout, stderr } rather than with stdout alone. Without it the stub
+  // would only look right by accident of how it calls back.
+  fakeExec[util.promisify.custom] = (command) =>
+    new Promise((resolve, reject) => {
+      fakeExec(command, (error, stdout, stderr) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        resolve({ stdout, stderr });
+      });
+    });
+
+  const fakeChildProcess = { exec: fakeExec };
 
   const stubs = {
     node_helper: { create: (definition) => definition },

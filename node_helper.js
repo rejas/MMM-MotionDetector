@@ -5,6 +5,17 @@ const path = require("path");
 
 const VALID_PLATFORMS = ["x11", "cec", "labwc", "mac-arm", "mac-intel"];
 
+/**
+ * Describe a failed exec. A script that ran and failed carries stderr, while a
+ * failure to spawn it at all only carries a message.
+ * @param error rejection from exec
+ * @returns {string}
+ */
+function describeError (error) {
+  const stderr = error && error.stderr ? String(error.stderr).trim() : "";
+  return stderr || (error && error.message) || String(error);
+}
+
 module.exports = NodeHelper.create({
 
   /**
@@ -18,7 +29,7 @@ module.exports = NodeHelper.create({
     this.platform = platform;
     this.activateMonitor()
       .then(() => Log.info("monitor has been initially activated."))
-      .catch((result) => Log.error(`error activating monitor initially: ${result.stderr}.`));
+      .catch((error) => Log.error(`error activating monitor initially: ${describeError(error)}.`));
     },
 
   /**
@@ -75,13 +86,13 @@ module.exports = NodeHelper.create({
       Log.info("activating monitor.");
       this.activateMonitor()
         .then(() => Log.info("monitor has been activated."))
-        .catch((result) => Log.error(`error activating monitor: ${result.stderr}`));
+        .catch((error) => Log.error(`error activating monitor: ${describeError(error)}`));
     }
     if (notification === "DEACTIVATE_MONITOR") {
       Log.info("deactivating monitor");
       this.deactivateMonitor()
         .then(() => Log.info("monitor has been deactivated."))
-        .catch((result) => Log.error(`error deactivating monitor: ${result.stderr}`));
+        .catch((error) => Log.error(`error deactivating monitor: ${describeError(error)}`));
     }
   }
 });

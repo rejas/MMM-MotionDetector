@@ -113,5 +113,37 @@ describe("node_helper", () => {
 
       assert.strictEqual(logs.error.length, 1);
     });
+
+    it("logs what the script wrote to stderr", async () => {
+      const { helper, logs } = loadNodeHelper({
+        exec: () => {
+          const error = new Error("Command failed");
+          error.stderr = "vcgencmd: command not found\n";
+          throw error;
+        },
+      });
+
+      helper.platform = "x11";
+      helper.socketNotificationReceived("ACTIVATE_MONITOR");
+      await flush();
+
+      assert.match(logs.error[0], /vcgencmd: command not found/);
+    });
+
+    it("logs the message when the script could not be spawned at all", async () => {
+      const { helper, logs } = loadNodeHelper({
+        exec: () => {
+          // a spawn failure never reaches the script, so it carries no stderr
+          throw new Error("spawn ENOENT");
+        },
+      });
+
+      helper.platform = "x11";
+      helper.socketNotificationReceived("DEACTIVATE_MONITOR");
+      await flush();
+
+      assert.match(logs.error[0], /spawn ENOENT/);
+      assert.doesNotMatch(logs.error[0], /undefined/);
+    });
   });
 });

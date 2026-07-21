@@ -28,6 +28,22 @@ describe("DiffCamEngine option defaults", () => {
       assert.strictEqual(engine.engine.getScoreThreshold(), 16);
     });
 
+    it("does not treat a completely still frame as motion at a threshold of zero", async () => {
+      const engine = await loadEngine({
+        frames: [frameWithMotionPixels(0), frameWithMotionPixels(0)],
+        init: { scoreThreshold: 0 },
+      });
+
+      engine.startStreaming();
+      engine.tick(); // primes the previous frame, nothing is diffed yet
+      engine.tick();
+
+      // a score of zero means not one pixel changed, which is never motion
+      assert.strictEqual(engine.captures[0].score, 0);
+      assert.strictEqual(engine.captures[0].hasMotion, false);
+      assert.strictEqual(engine.captures[0].motionBox, undefined);
+    });
+
     it("treats a single moving pixel as motion at a threshold of zero", async () => {
       const engine = await loadEngine({
         frames: [frameWithMotionPixels(0), frameWithMotionPixels(1)],
