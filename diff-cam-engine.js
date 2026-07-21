@@ -249,7 +249,7 @@ window.DiffCamEngine = (function () {
 
     return {
       score: score,
-      motionBox: score > scoreThreshold ? motionBox : undefined,
+      motionBox: score >= scoreThreshold ? motionBox : undefined,
       motionPixels: motionPixels,
     };
   }
