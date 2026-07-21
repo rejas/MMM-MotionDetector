@@ -41,12 +41,9 @@ describe("DiffCamEngine motion box", () => {
   it("collapses to a single point for one moving pixel", async () => {
     const engine = await loadEngine({
       frames: [frameWithMotionAt([]), frameWithMotionAt([{ x: 7, y: 9 }])],
-      init: { includeMotionBox: true },
+      init: { includeMotionBox: true, scoreThreshold: 0 },
     });
 
-    // init reads scoreThreshold with a || default, so a zero passed there would
-    // silently become 16, the setter is the only way to get a threshold of zero
-    engine.engine.setScoreThreshold(0);
     engine.startStreaming();
     engine.tick();
     engine.tick();
@@ -60,10 +57,9 @@ describe("DiffCamEngine motion box", () => {
   it("does not leak coordinates between captures", async () => {
     const engine = await loadEngine({
       frames: [frameWithMotionAt([]), frameWithMotionAt([{ x: 60, y: 45 }]), frameWithMotionAt([{ x: 1, y: 2 }])],
-      init: { includeMotionBox: true },
+      init: { includeMotionBox: true, scoreThreshold: 0 },
     });
 
-    engine.engine.setScoreThreshold(0);
     engine.startStreaming();
     engine.tick();
     engine.tick();
