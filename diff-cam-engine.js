@@ -162,9 +162,17 @@ window.DiffCamEngine = (function () {
    */
   function stop() {
     clearInterval(captureInterval);
+    captureInterval = undefined;
+
+    // start() may have registered this and the stream may not have become ready
+    // yet, in which case canplay would still arrive and restart capturing
+    video.removeEventListener("canplay", startComplete);
+
     if (stream) {
       stream.getTracks().forEach((track) => track.stop());
+      stream = undefined;
     }
+    video.srcObject = null;
     video.src = "";
     motionContext.clearRect(0, 0, diffWidth, diffHeight);
     isReadyToDiff = false;

@@ -39,6 +39,33 @@ describe("DiffCamEngine", () => {
       assert.strictEqual(engine.isTicking, false);
     });
 
+    it("does not let a late canplay restart capturing", async () => {
+      const engine = await loadEngine({ tracks: [createTrack()] });
+
+      // stopped after start() but before the stream ever became ready, so the
+      // browser still delivers canplay afterwards
+      engine.engine.start();
+      engine.engine.stop();
+      if (engine.video.listeners.canplay) {
+        engine.video.listeners.canplay();
+      }
+
+      assert.strictEqual(engine.isTicking, false);
+    });
+
+    it("releases the stream so a stopped engine cannot be restarted", async () => {
+      const tracks = [createTrack()];
+      const engine = await loadEngine({ tracks });
+
+      engine.startStreaming();
+      engine.engine.stop();
+
+      // the tracks are dead, so starting again has to go through init rather
+      // than silently carrying on with a stream that no longer delivers frames
+      assert.strictEqual(engine.video.srcObject, null);
+      assert.throws(() => engine.engine.start());
+    });
+
     it("does not throw when the camera was never granted", async () => {
       const engine = await loadEngine({
         getUserMedia: () => Promise.reject(new Error("NotAllowedError")),
