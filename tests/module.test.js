@@ -102,6 +102,17 @@ describe("MMM-MotionDetector", () => {
       assert.strictEqual(module.getTemplateData().error, "NotAllowedError");
     });
 
+    it("renders when no motion was ever detected", () => {
+      const { module } = loadModule();
+
+      // the template is rendered on the init error path too, where a capture
+      // may never have run and lastTimeMotionDetected can still be unset
+      module.lastTimeMotionDetected = null;
+
+      assert.doesNotThrow(() => module.getTemplateData());
+      assert.strictEqual(module.getTemplateData().lastTimeMotionDetected, null);
+    });
+
     it("renders without an error once a frame was captured", () => {
       const { module, capture } = loadModule();
 
