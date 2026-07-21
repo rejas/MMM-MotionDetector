@@ -37,7 +37,7 @@ describe("node_helper", () => {
     it("turns the monitor on even when it is already on", async () => {
       // the old status check skipped the call in this case, which left the
       // monitor asleep whenever the status script misreported
-      const { helper, commands } = loadNodeHelper({ exec: () => ({ stdout: "ON" }) });
+      const { helper, commands } = loadNodeHelper({ run: () => ({ stdout: "ON" }) });
 
       helper.platform = "x11";
       await helper.activateMonitor();
@@ -61,7 +61,7 @@ describe("node_helper", () => {
 
     it("propagates a failing script", async () => {
       const { helper } = loadNodeHelper({
-        exec: () => {
+        run: () => {
           throw new Error("vcgencmd not found");
         },
       });
@@ -116,7 +116,7 @@ describe("node_helper", () => {
 
     it("logs an error when the script fails", async () => {
       const { helper, logs } = loadNodeHelper({
-        exec: () => {
+        run: () => {
           throw new Error("boom");
         },
       });
@@ -130,7 +130,7 @@ describe("node_helper", () => {
 
     it("logs what the script wrote to stderr", async () => {
       const { helper, logs } = loadNodeHelper({
-        exec: () => {
+        run: () => {
           const error = new Error("Command failed");
           error.stderr = "vcgencmd: command not found\n";
           throw error;
@@ -146,7 +146,7 @@ describe("node_helper", () => {
 
     it("logs the message when the script could not be spawned at all", async () => {
       const { helper, logs } = loadNodeHelper({
-        exec: () => {
+        run: () => {
           // a spawn failure never reaches the script, so it carries no stderr
           throw new Error("spawn ENOENT");
         },

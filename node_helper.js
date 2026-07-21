@@ -6,9 +6,9 @@ const path = require("path");
 const VALID_PLATFORMS = ["x11", "cec", "labwc", "mac-arm", "mac-intel"];
 
 /**
- * Describe a failed exec. A script that ran and failed carries stderr, while a
- * failure to spawn it at all only carries a message.
- * @param error rejection from exec
+ * Describe a failed monitor command. A script that ran and failed carries
+ * stderr, while a failure to spawn bash at all only carries a message.
+ * @param error rejection from the promisified execFile
  * @returns {string}
  */
 function describeError (error) {
