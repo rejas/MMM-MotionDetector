@@ -29,8 +29,6 @@ window.DiffCamEngine = (function () {
   let imageMimeType; // string e.g. "image/jpeg", "image/png"
   let jpegQuality; // imageMimeType:"image/jpeg" quality value between 0 and 1
 
-  let coords;
-
   /**
    *
    * @param options
@@ -50,13 +48,16 @@ window.DiffCamEngine = (function () {
     captureHeight = options.captureHeight || 480;
     diffWidth = options.diffWidth || 64;
     diffHeight = options.diffHeight || 48;
-    pixelDiffThreshold = options.pixelDiffThreshold || 32;
-    scoreThreshold = options.scoreThreshold || 16;
+    // zero is a meaningful value for both thresholds, so they fall back only
+    // when nothing was passed at all
+    pixelDiffThreshold = options.pixelDiffThreshold ?? 32;
+    scoreThreshold = options.scoreThreshold ?? 16;
     includeMotionBox = options.includeMotionBox || false;
     includeMotionPixels = options.includeMotionPixels || false;
 
     imageMimeType = options.imageMimeType || "image/jpeg";
-    jpegQuality = options.jpegQuality || 0.7;
+    // zero is the lowest valid quality, not "unset"
+    jpegQuality = options.jpegQuality ?? 0.7;
 
     // callbacks
     initSuccessCallback = options.initSuccessCallback || function () {};
@@ -161,6 +162,17 @@ window.DiffCamEngine = (function () {
    */
   function stop() {
     clearInterval(captureInterval);
+    captureInterval = undefined;
+
+    // start() may have registered this and the stream may not have become ready
+    // yet, in which case canplay would still arrive and restart capturing
+    video.removeEventListener("canplay", startComplete);
+
+    if (stream) {
+      stream.getTracks().forEach((track) => track.stop());
+      stream = undefined;
+    }
+    video.srcObject = null;
     video.src = "";
     motionContext.clearRect(0, 0, diffWidth, diffHeight);
     isReadyToDiff = false;
@@ -195,7 +207,7 @@ window.DiffCamEngine = (function () {
       captureCallback({
         imageData: captureImageData,
         score: diff.score,
-        hasMotion: diff.score >= scoreThreshold,
+        hasMotion: meetsScoreThreshold(diff.score),
         motionBox: diff.motionBox,
         motionPixels: diff.motionPixels,
         getURL: function () {
@@ -225,32 +237,57 @@ window.DiffCamEngine = (function () {
     let score = 0;
     let motionPixels = includeMotionPixels ? [] : undefined;
     let motionBox = undefined;
+    // a threshold of zero would divide by zero here, and every pixel is at
+    // least as bright as nothing, so scale against one instead
+    const normalizationDivisor = pixelDiffThreshold || 1;
+
     for (let i = 0; i < rgba.length; i += 4) {
       const pixelDiff = rgba[i] * 0.3 + rgba[i + 1] * 0.6 + rgba[i + 2] * 0.1;
-      const normalized = Math.min(255, pixelDiff * (255 / pixelDiffThreshold));
+      const normalized = Math.min(255, pixelDiff * (255 / normalizationDivisor));
       rgba[i] = 0;
       rgba[i + 1] = normalized;
       rgba[i + 2] = 0;
 
-      if (pixelDiff >= pixelDiffThreshold) {
+      if (meetsPixelDiffThreshold(pixelDiff)) {
         score++;
-        coords = calculateCoordinates(i / 4);
+        const { x, y } = calculateCoordinates(i / 4);
 
         if (includeMotionBox) {
-          motionBox = calculateMotionBox(motionBox, coords.x, coords.y);
+          motionBox = calculateMotionBox(motionBox, x, y);
         }
 
         if (includeMotionPixels) {
-          motionPixels = calculateMotionPixels(motionPixels, coords.x, coords.y);
+          motionPixels = calculateMotionPixels(motionPixels, x, y);
         }
       }
     }
 
     return {
       score: score,
-      motionBox: score > scoreThreshold ? motionBox : undefined,
+      motionBox: meetsScoreThreshold(score) ? motionBox : undefined,
       motionPixels: motionPixels,
     };
+  }
+
+  /**
+   * Whether a pixel changed enough to count. A difference of zero means the
+   * pixel is identical to the previous frame, which is never significant, not
+   * even at a pixelDiffThreshold of zero.
+   * @param pixelDiff weighted difference for one pixel
+   * @returns {boolean}
+   */
+  function meetsPixelDiffThreshold(pixelDiff) {
+    return pixelDiff > 0 && pixelDiff >= pixelDiffThreshold;
+  }
+
+  /**
+   * Whether a score counts as motion. A score of zero means not a single pixel
+   * changed, which is never motion, not even at a scoreThreshold of zero.
+   * @param score number of pixels that exceeded pixelDiffThreshold
+   * @returns {boolean}
+   */
+  function meetsScoreThreshold(score) {
+    return score > 0 && score >= scoreThreshold;
   }
 
   /**
@@ -275,8 +312,8 @@ window.DiffCamEngine = (function () {
   function calculateMotionBox(currentMotionBox, x, y) {
     // init motion box on demand
     let motionBox = currentMotionBox || {
-      x: { min: coords.x, max: x },
-      y: { min: coords.y, max: y },
+      x: { min: x, max: x },
+      y: { min: y, max: y },
     };
 
     motionBox.x.min = Math.min(motionBox.x.min, x);
