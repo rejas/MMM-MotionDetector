@@ -161,6 +161,9 @@ window.DiffCamEngine = (function () {
    */
   function stop() {
     clearInterval(captureInterval);
+    if (stream) {
+      stream.getTracks().forEach((track) => track.stop());
+    }
     video.src = "";
     motionContext.clearRect(0, 0, diffWidth, diffHeight);
     isReadyToDiff = false;
