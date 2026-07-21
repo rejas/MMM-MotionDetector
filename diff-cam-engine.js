@@ -50,13 +50,16 @@ window.DiffCamEngine = (function () {
     captureHeight = options.captureHeight || 480;
     diffWidth = options.diffWidth || 64;
     diffHeight = options.diffHeight || 48;
-    pixelDiffThreshold = options.pixelDiffThreshold || 32;
-    scoreThreshold = options.scoreThreshold || 16;
+    // zero is a meaningful value for both thresholds, so they fall back only
+    // when nothing was passed at all
+    pixelDiffThreshold = options.pixelDiffThreshold ?? 32;
+    scoreThreshold = options.scoreThreshold ?? 16;
     includeMotionBox = options.includeMotionBox || false;
     includeMotionPixels = options.includeMotionPixels || false;
 
     imageMimeType = options.imageMimeType || "image/jpeg";
-    jpegQuality = options.jpegQuality || 0.7;
+    // zero is the lowest valid quality, not "unset"
+    jpegQuality = options.jpegQuality ?? 0.7;
 
     // callbacks
     initSuccessCallback = options.initSuccessCallback || function () {};
