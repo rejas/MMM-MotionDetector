@@ -4,16 +4,23 @@ const { loadModule, setLastMotionAge } = require("./module-mock");
 
 describe("MMM-MotionDetector", () => {
   describe("motion detected", () => {
-    it("announces motion on both the socket and the module bus", () => {
+    it("announces motion on the module bus", () => {
       const { module, capture } = loadModule();
 
       capture({ score: 42, hasMotion: true });
 
-      assert.deepStrictEqual(module.notifications, [
-        ["socket", "MOTION_DETECTED", { score: 42 }],
-        ["notification", "MOTION_DETECTED", { score: 42 }],
-      ]);
+      assert.deepStrictEqual(module.notifications, [["notification", "MOTION_DETECTED", { score: 42 }]]);
       assert.strictEqual(module.lastScoreDetected, 42);
+    });
+
+    it("does not send MOTION_DETECTED over the socket, the node helper has no handler for it", () => {
+      const { module, capture } = loadModule();
+
+      capture({ score: 42, hasMotion: true });
+
+      assert.ok(
+        !module.notifications.some(([bus, notification]) => bus === "socket" && notification === "MOTION_DETECTED")
+      );
     });
 
     it("does not activate the monitor when it is already on", () => {
