@@ -30,35 +30,21 @@ module.exports = NodeHelper.create({
   },
 
   /**
-   *
+   * Turns the monitor on. The underlying scripts are idempotent, so no
+   * status check is needed beforehand.
    */
   async activateMonitor () {
     const scriptPath = this.getCommandScript();
-    const isMonitorOn = await this.isMonitorOn();
-    if (!isMonitorOn) {
-      await exec(`bash ${scriptPath} on`);
-    }
+    await exec(`bash ${scriptPath} on`);
   },
 
   /**
-   *
+   * Turns the monitor off. The underlying scripts are idempotent, so no
+   * status check is needed beforehand.
    */
   async deactivateMonitor () {
     const scriptPath = this.getCommandScript();
-    const isMonitorOn = await this.isMonitorOn();
-    if (isMonitorOn) {
-      await exec(`bash ${scriptPath} off`);
-    }
-  },
-
-  /**
-   * @returns {Promise<boolean>}
-   */
-  async isMonitorOn () {
-    const scriptPath = this.getCommandScript();
-    const result = await exec(`bash ${scriptPath} status`);
-    Log.info(`monitor is currently ${ result.stdout.trim()}.`);
-    return result.stdout.trim() === "ON";
+    await exec(`bash ${scriptPath} off`);
   },
 
   /**
