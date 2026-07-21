@@ -87,7 +87,6 @@ Module.register("MMM-MotionDetector", {
         );
         if (hasMotion) {
           Log.info(`Motion detected, score: ${score}`);
-          this.sendSocketNotification("MOTION_DETECTED", { score: score });
           this.sendNotification("MOTION_DETECTED", { score: score });
           if (this.poweredOff) {
             Log.info(`Percentage of uptime powered off:  ${this.percentagePoweredOff}`);
