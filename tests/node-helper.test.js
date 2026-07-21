@@ -61,21 +61,32 @@ describe("node_helper", () => {
 
   describe("toggling without a valid platform", () => {
     it("does not activate the monitor when no platform was set", async () => {
-      const { helper, commands, logs } = loadNodeHelper();
+      const { helper, commands } = loadNodeHelper();
 
-      await helper.activateMonitor();
+      await assert.rejects(() => helper.activateMonitor(), /no valid platform/);
 
       assert.deepStrictEqual(commands, []);
-      assert.strictEqual(logs.error.length, 1);
     });
 
     it("does not deactivate the monitor when no platform was set", async () => {
-      const { helper, commands, logs } = loadNodeHelper();
+      const { helper, commands } = loadNodeHelper();
 
-      await helper.deactivateMonitor();
+      await assert.rejects(() => helper.deactivateMonitor(), /no valid platform/);
 
       assert.deepStrictEqual(commands, []);
+    });
+
+    it("does not claim success after refusing to toggle", async () => {
+      const { helper, logs } = loadNodeHelper();
+
+      helper.socketNotificationReceived("ACTIVATE_MONITOR");
+      await flush();
+
+      // refusing used to resolve, so the then() branch logged that the monitor
+      // had been activated directly after logging that it could not be
       assert.strictEqual(logs.error.length, 1);
+      assert.match(logs.error[0], /no valid platform/);
+      assert.ok(!logs.info.some((message) => message.includes("has been activated")));
     });
 
     it("does not fall back to x11 after a platform was rejected", async () => {

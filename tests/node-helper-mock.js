@@ -26,12 +26,21 @@ function loadNodeHelper({ run } = {}) {
   const fakeExecFile = (file, args, callback) => {
     calls.push({ file, args });
     commands.push([file, ...args].join(" "));
+
+    let result;
     try {
-      const { stdout = "", stderr = "" } = runHandler([file, ...args].join(" ")) || {};
-      callback(null, stdout, stderr);
+      result = runHandler([file, ...args].join(" "));
     } catch (error) {
       callback(error);
+      return;
     }
+
+    // the real execFile never calls back synchronously, and a handler may
+    // return a promise to model a command that takes a while to finish
+    Promise.resolve(result).then(
+      ({ stdout = "", stderr = "" } = {}) => callback(null, stdout, stderr),
+      (error) => callback(error)
+    );
   };
 
   // the real execFile carries this symbol, and util.promisify honours it to

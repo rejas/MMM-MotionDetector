@@ -49,29 +49,47 @@ module.exports = NodeHelper.create({
   },
 
   /**
-   * Turns the monitor on. The underlying scripts are idempotent, so no
-   * status check is needed beforehand.
+   * Queue a monitor command behind the previous one.
+   *
+   * The scripts are idempotent, so no status check is needed, but they are not
+   * instant. Firing on and off concurrently lets a slow off land after a later
+   * on and leave the screen dark, and the module never retries because it has
+   * already recorded the monitor as awake. Running them one at a time keeps the
+   * last requested state the one that wins.
+   * @param action either "on" or "off"
+   * @returns {Promise<void>}
    */
-  async activateMonitor () {
-    if (!this.hasValidPlatform()) {
-      Log.error("cannot activate monitor, no valid platform has been configured.");
-      return;
-    }
+  runMonitorCommand (action) {
     // execFile takes the arguments as a list, so no shell parses the path and
     // directories containing spaces or metacharacters are handled correctly
-    await execFile("bash", [this.getCommandScript(), "on"]);
+    const run = () => execFile("bash", [this.getCommandScript(), action]);
+    const next = this.pendingCommand ? this.pendingCommand.then(run, run) : run();
+
+    // the chain must survive a failing command, or every later toggle rejects
+    this.pendingCommand = next.catch(() => {});
+    return next;
   },
 
   /**
-   * Turns the monitor off. The underlying scripts are idempotent, so no
-   * status check is needed beforehand.
+   * Turns the monitor on.
+   * @returns {Promise<void>}
+   */
+  async activateMonitor () {
+    if (!this.hasValidPlatform()) {
+      throw new Error("no valid platform has been configured");
+    }
+    await this.runMonitorCommand("on");
+  },
+
+  /**
+   * Turns the monitor off.
+   * @returns {Promise<void>}
    */
   async deactivateMonitor () {
     if (!this.hasValidPlatform()) {
-      Log.error("cannot deactivate monitor, no valid platform has been configured.");
-      return;
+      throw new Error("no valid platform has been configured");
     }
-    await execFile("bash", [this.getCommandScript(), "off"]);
+    await this.runMonitorCommand("off");
   },
 
   /**

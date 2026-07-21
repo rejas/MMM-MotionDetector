@@ -237,14 +237,18 @@ window.DiffCamEngine = (function () {
     let score = 0;
     let motionPixels = includeMotionPixels ? [] : undefined;
     let motionBox = undefined;
+    // a threshold of zero would divide by zero here, and every pixel is at
+    // least as bright as nothing, so scale against one instead
+    const normalizationDivisor = pixelDiffThreshold || 1;
+
     for (let i = 0; i < rgba.length; i += 4) {
       const pixelDiff = rgba[i] * 0.3 + rgba[i + 1] * 0.6 + rgba[i + 2] * 0.1;
-      const normalized = Math.min(255, pixelDiff * (255 / pixelDiffThreshold));
+      const normalized = Math.min(255, pixelDiff * (255 / normalizationDivisor));
       rgba[i] = 0;
       rgba[i + 1] = normalized;
       rgba[i + 2] = 0;
 
-      if (pixelDiff >= pixelDiffThreshold) {
+      if (meetsPixelDiffThreshold(pixelDiff)) {
         score++;
         const { x, y } = calculateCoordinates(i / 4);
 
@@ -263,6 +267,17 @@ window.DiffCamEngine = (function () {
       motionBox: meetsScoreThreshold(score) ? motionBox : undefined,
       motionPixels: motionPixels,
     };
+  }
+
+  /**
+   * Whether a pixel changed enough to count. A difference of zero means the
+   * pixel is identical to the previous frame, which is never significant, not
+   * even at a pixelDiffThreshold of zero.
+   * @param pixelDiff weighted difference for one pixel
+   * @returns {boolean}
+   */
+  function meetsPixelDiffThreshold(pixelDiff) {
+    return pixelDiff > 0 && pixelDiff >= pixelDiffThreshold;
   }
 
   /**

@@ -45,6 +45,7 @@ function createContext(frames) {
 async function loadEngine({ frames = [], tracks = [], getUserMedia, init: initOptions = {} } = {}) {
   const queuedFrames = [...frames];
   const contexts = [];
+  const dataUrlCalls = [];
   const stream = { getTracks: () => tracks };
 
   const video = {
@@ -54,7 +55,12 @@ async function loadEngine({ frames = [], tracks = [], getUserMedia, init: initOp
     addEventListener(event, handler) {
       this.listeners[event] = handler;
     },
-    removeEventListener(event) {
+    // the DOM only detaches the handler that was actually registered, so
+    // removing a different function must be a no-op here too
+    removeEventListener(event, handler) {
+      if (handler !== undefined && this.listeners[event] !== handler) {
+        return;
+      }
       delete this.listeners[event];
     },
   };
@@ -69,7 +75,10 @@ async function loadEngine({ frames = [], tracks = [], getUserMedia, init: initOp
       contexts.push(context);
       return context;
     },
-    toDataURL: () => "data:image/jpeg;base64,stub",
+    toDataURL: (...args) => {
+      dataUrlCalls.push(args);
+      return "data:image/jpeg;base64,stub";
+    },
   });
 
   let intervalCallback;
@@ -117,6 +126,7 @@ async function loadEngine({ frames = [], tracks = [], getUserMedia, init: initOp
 
   return {
     captures,
+    dataUrlCalls,
     engine,
     initError,
     stream,

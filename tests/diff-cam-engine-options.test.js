@@ -72,10 +72,9 @@ describe("DiffCamEngine option defaults", () => {
       assert.strictEqual(engine.engine.getPixelDiffThreshold(), 32);
     });
 
-    it("counts every pixel at a threshold of zero", async () => {
-      const totalPixels = 64 * 48;
+    it("counts every changed pixel at a threshold of zero", async () => {
       const engine = await loadEngine({
-        frames: [frameWithMotionPixels(0), frameWithMotionPixels(1)],
+        frames: [frameWithMotionPixels(0), frameWithMotionPixels(5)],
         init: { pixelDiffThreshold: 0, scoreThreshold: 1 },
       });
 
@@ -83,7 +82,58 @@ describe("DiffCamEngine option defaults", () => {
       engine.tick();
       engine.tick();
 
-      assert.strictEqual(engine.captures[0].score, totalPixels);
+      // only the pixels that actually changed, not the whole frame
+      assert.strictEqual(engine.captures[0].score, 5);
+    });
+
+    it("counts no pixels of a still frame at a threshold of zero", async () => {
+      const engine = await loadEngine({
+        frames: [frameWithMotionPixels(0), frameWithMotionPixels(0)],
+        init: { pixelDiffThreshold: 0, scoreThreshold: 20 },
+      });
+
+      engine.startStreaming();
+      engine.tick();
+      engine.tick();
+
+      // an unchanged pixel is never significant, so the score guard stays
+      // meaningful instead of every frame scoring the full 64x48
+      assert.strictEqual(engine.captures[0].score, 0);
+      assert.strictEqual(engine.captures[0].hasMotion, false);
+    });
+  });
+
+  describe("jpegQuality", () => {
+    /**
+     * Capture one frame and ask the engine for its data URL.
+     * @param initOptions options passed to DiffCamEngine.init
+     * @returns {Promise<Array>} the arguments toDataURL was called with
+     */
+    async function captureUrlArgs(initOptions) {
+      const engine = await loadEngine({
+        frames: [frameWithMotionPixels(0), frameWithMotionPixels(5)],
+        init: { scoreThreshold: 1, ...initOptions },
+      });
+
+      engine.startStreaming();
+      engine.tick();
+      engine.tick();
+      engine.captures[0].getURL();
+
+      return engine.dataUrlCalls.at(-1);
+    }
+
+    it("defaults to 0.7", async () => {
+      assert.deepStrictEqual(await captureUrlArgs({}), ["image/jpeg", 0.7]);
+    });
+
+    it("keeps an explicit zero rather than falling back", async () => {
+      // zero is the lowest valid quality, not an unset option
+      assert.deepStrictEqual(await captureUrlArgs({ jpegQuality: 0 }), ["image/jpeg", 0]);
+    });
+
+    it("ignores the quality for a non jpeg mime type", async () => {
+      assert.deepStrictEqual(await captureUrlArgs({ imageMimeType: "image/png" }), ["image/png"]);
     });
   });
 

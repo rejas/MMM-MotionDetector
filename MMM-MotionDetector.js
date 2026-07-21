@@ -75,17 +75,24 @@ Module.register("MMM-MotionDetector", {
       },
       captureCallback: ({ score, hasMotion }) => {
         const currentDate = new Date();
-        this.percentagePoweredOff = ((100 * this.poweredOffTime) / (currentDate.getTime() - this.timeStarted)).toFixed(
-          2
-        );
+
+        // the stretch that is currently running is not booked into
+        // poweredOffTime yet, so count it in or the figure reads stale for as
+        // long as the monitor is off and reports the previous total on wake
+        const ongoingPoweredOffTime = this.poweredOff
+          ? currentDate.getTime() - this.lastTimePoweredOff.getTime()
+          : 0;
+        const poweredOffSoFar = this.poweredOffTime + ongoingPoweredOffTime;
+        this.percentagePoweredOff = ((100 * poweredOffSoFar) / (currentDate.getTime() - this.timeStarted)).toFixed(2);
+
         if (hasMotion) {
           Log.info(`Motion detected, score: ${score}`);
           this.sendNotification("MOTION_DETECTED", { score: score });
           if (this.poweredOff) {
+            this.poweredOffTime = poweredOffSoFar;
+            this.poweredOff = false;
             Log.info(`Percentage of uptime powered off:  ${this.percentagePoweredOff}`);
             this.sendSocketNotification("ACTIVATE_MONITOR");
-            this.poweredOffTime = this.poweredOffTime + (currentDate.getTime() - this.lastTimePoweredOff.getTime());
-            this.poweredOff = false;
           }
           this.lastTimeMotionDetected = currentDate;
         } else {
