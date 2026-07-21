@@ -3,12 +3,18 @@ const exec = require("util").promisify(require("child_process").exec);
 const Log = require("../../js/logger");
 const path = require("path");
 
+const VALID_PLATFORMS = ["x11", "cec", "labwc", "mac-arm", "mac-intel"];
+
 module.exports = NodeHelper.create({
 
   /**
    * @param platform
    */
   initMonitor (platform) {
+    if (!VALID_PLATFORMS.includes(platform)) {
+      Log.error(`unknown platform "${platform}", must be one of: ${VALID_PLATFORMS.join(", ")}.`);
+      return;
+    }
     this.platform = platform;
     this.activateMonitor()
       .then(() => Log.info("monitor has been initially activated."))
