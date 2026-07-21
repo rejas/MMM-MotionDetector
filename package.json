@@ -18,8 +18,9 @@
     "lint": "eslint && prettier . --check",
     "lint:fix": "eslint --fix && prettier . --write",
     "prepare": "[ -f node_modules/.bin/husky ] && husky || echo info for developers: husky is not installed.",
-    "test": "node --run lint && node --run test:spelling",
-    "test:spelling": "cspell ."
+    "test": "node --run lint && node --run test:spelling && node --run test:unit",
+    "test:spelling": "cspell .",
+    "test:unit": "node --test \"tests/**/*.test.js\""
   },
   "lint-staged": {
     "*": [
