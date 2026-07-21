@@ -22,11 +22,19 @@ module.exports = NodeHelper.create({
     },
 
   /**
+   * Whether initMonitor accepted a platform. Without one there is no script to
+   * run, and guessing a default would defeat the validation in initMonitor.
+   * @returns {boolean}
+   */
+  hasValidPlatform () {
+    return VALID_PLATFORMS.includes(this.platform);
+  },
+
+  /**
    * Get the command script path based on platform option
    */
   getCommandScript () {
-    const platform = this.platform || "x11";
-    return path.join(__dirname, `monitor-commands-${platform}.sh`);
+    return path.join(__dirname, `monitor-commands-${this.platform}.sh`);
   },
 
   /**
@@ -34,8 +42,11 @@ module.exports = NodeHelper.create({
    * status check is needed beforehand.
    */
   async activateMonitor () {
-    const scriptPath = this.getCommandScript();
-    await exec(`bash ${scriptPath} on`);
+    if (!this.hasValidPlatform()) {
+      Log.error("cannot activate monitor, no valid platform has been configured.");
+      return;
+    }
+    await exec(`bash ${this.getCommandScript()} on`);
   },
 
   /**
@@ -43,8 +54,11 @@ module.exports = NodeHelper.create({
    * status check is needed beforehand.
    */
   async deactivateMonitor () {
-    const scriptPath = this.getCommandScript();
-    await exec(`bash ${scriptPath} off`);
+    if (!this.hasValidPlatform()) {
+      Log.error("cannot deactivate monitor, no valid platform has been configured.");
+      return;
+    }
+    await exec(`bash ${this.getCommandScript()} off`);
   },
 
   /**
