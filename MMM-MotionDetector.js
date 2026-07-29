@@ -6,6 +6,8 @@ Module.register("MMM-MotionDetector", {
     scoreThreshold: 20,
     timeout: 120000, // 2 minutes,
     deviceId: null,
+    controlDisplay: true, // switch the monitor on and off, set false to only detect motion
+    additionalNotification: null, // extra notification broadcast to other modules on motion
   },
 
   lastScoreDetected: null,
@@ -49,7 +51,9 @@ Module.register("MMM-MotionDetector", {
     this.lastTimePoweredOff = new Date();
     this.timeStarted = new Date().getTime();
 
-    this.sendSocketNotification("INIT_MONITOR", this.config.platform);
+    if (this.config.controlDisplay) {
+      this.sendSocketNotification("INIT_MONITOR", this.config.platform);
+    }
 
     const canvas = document.createElement("canvas");
     const video = document.createElement("video");
@@ -88,7 +92,10 @@ Module.register("MMM-MotionDetector", {
         if (hasMotion) {
           Log.info(`Motion detected, score: ${score}`);
           this.sendNotification("MOTION_DETECTED", { score: score });
-          if (this.poweredOff) {
+          if (this.config.additionalNotification) {
+            this.sendNotification(this.config.additionalNotification, { score: score });
+          }
+          if (this.config.controlDisplay && this.poweredOff) {
             this.poweredOffTime = poweredOffSoFar;
             this.poweredOff = false;
             Log.info(`Percentage of uptime powered off:  ${this.percentagePoweredOff}`);
@@ -97,7 +104,7 @@ Module.register("MMM-MotionDetector", {
           this.lastTimeMotionDetected = currentDate;
         } else {
           const time = currentDate.getTime() - this.lastTimeMotionDetected.getTime();
-          if (this.config.timeout >= 0 && time > this.config.timeout && !this.poweredOff) {
+          if (this.config.controlDisplay && this.config.timeout >= 0 && time > this.config.timeout && !this.poweredOff) {
             this.sendSocketNotification("DEACTIVATE_MONITOR");
             this.lastTimePoweredOff = currentDate;
             this.poweredOff = true;

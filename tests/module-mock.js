@@ -53,10 +53,17 @@ function loadModule(config = {}) {
 
   module.start();
 
-  // start() emits INIT_MONITOR, tests care about what happens afterwards
+  // start() emits INIT_MONITOR; most tests care about what happens afterwards,
+  // so keep a snapshot for the few that check start() itself and then clear
+  const startNotifications = [...module.notifications];
   module.notifications.length = 0;
 
-  return { module, capture: engineOptions.captureCallback, initError: engineOptions.initErrorCallback };
+  return {
+    module,
+    startNotifications,
+    capture: engineOptions.captureCallback,
+    initError: engineOptions.initErrorCallback,
+  };
 }
 
 /**

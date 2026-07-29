@@ -92,6 +92,79 @@ describe("MMM-MotionDetector", () => {
     });
   });
 
+  describe("additionalNotification", () => {
+    it("is not sent by default", () => {
+      const { module, capture } = loadModule();
+
+      capture({ score: 42, hasMotion: true });
+
+      assert.deepStrictEqual(module.notifications, [["notification", "MOTION_DETECTED", { score: 42 }]]);
+    });
+
+    it("is broadcast alongside MOTION_DETECTED when configured", () => {
+      const { module, capture } = loadModule({ additionalNotification: "TAKE_SELFIE" });
+
+      capture({ score: 42, hasMotion: true });
+
+      assert.deepStrictEqual(module.notifications, [
+        ["notification", "MOTION_DETECTED", { score: 42 }],
+        ["notification", "TAKE_SELFIE", { score: 42 }],
+      ]);
+    });
+
+    it("is not sent when there is no motion", () => {
+      const { module, capture } = loadModule({ additionalNotification: "TAKE_SELFIE" });
+
+      capture({ score: 1, hasMotion: false });
+
+      assert.ok(!module.notifications.some(([, notification]) => notification === "TAKE_SELFIE"));
+    });
+  });
+
+  describe("controlDisplay", () => {
+    it("initialises the monitor by default", () => {
+      const { startNotifications } = loadModule();
+
+      assert.ok(startNotifications.some(([, notification]) => notification === "INIT_MONITOR"));
+    });
+
+    it("does not initialise the monitor when disabled", () => {
+      const { startNotifications } = loadModule({ controlDisplay: false });
+
+      assert.ok(!startNotifications.some(([, notification]) => notification === "INIT_MONITOR"));
+    });
+
+    it("does not power the monitor off when disabled", () => {
+      const { module, capture } = loadModule({ controlDisplay: false, timeout: 1000 });
+
+      setLastMotionAge(module, 5000);
+      capture({ score: 1, hasMotion: false });
+
+      assert.ok(!module.notifications.some(([, notification]) => notification === "DEACTIVATE_MONITOR"));
+      assert.strictEqual(module.poweredOff, false);
+    });
+
+    it("does not activate the monitor on motion when disabled", () => {
+      const { module, capture } = loadModule({ controlDisplay: false, timeout: 1000 });
+
+      // even if some earlier state had marked it powered off, no ACTIVATE goes out
+      module.poweredOff = true;
+      capture({ score: 50, hasMotion: true });
+
+      assert.ok(!module.notifications.some(([, notification]) => notification === "ACTIVATE_MONITOR"));
+    });
+
+    it("still reports motion when display control is disabled", () => {
+      const { module, capture } = loadModule({ controlDisplay: false });
+
+      capture({ score: 42, hasMotion: true });
+
+      assert.ok(
+        module.notifications.some(([bus, notification]) => bus === "notification" && notification === "MOTION_DETECTED")
+      );
+    });
+  });
+
   describe("template data", () => {
     it("surfaces an init error", () => {
       const { module, initError } = loadModule();
