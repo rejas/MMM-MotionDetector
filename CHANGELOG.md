@@ -4,7 +4,14 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [develop](https://github.com/rejas/MMM-MotionDetector/compare/v1.8.0...develop) - unreleased
+## [develop](https://github.com/rejas/MMM-MotionDetector/compare/v1.8.1...develop) - unreleased
+
+## [1.8.1](https://github.com/rejas/MMM-MotionDetector/compare/v1.8.0...v1.8.1) - 2026-09-01
+
+### Changed
+
+- The CI job `run-lint` was renamed to `lint-and-test` (#114)
+- Dev dependencies updated to their latest versions (#120, #125)
 
 ## [1.8.0](https://github.com/rejas/MMM-MotionDetector/compare/v1.7.0...v1.8.0) - 2026-07-21
 
