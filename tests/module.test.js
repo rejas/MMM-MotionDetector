@@ -93,31 +93,100 @@ describe("MMM-MotionDetector", () => {
   });
 
   describe("additionalNotification", () => {
-    it("is not sent by default", () => {
-      const { module, capture } = loadModule();
+    const hasSelfie = (module) =>
+      module.notifications.some(([bus, notification]) => bus === "notification" && notification === "TAKE_SELFIE");
 
+    /** Drive the module into the idle state so the next motion is an arrival. */
+    const goIdle = (module, capture) => {
+      setLastMotionAge(module, 5000);
+      capture({ score: 1, hasMotion: false });
+      module.notifications.length = 0;
+    };
+
+    it("is not sent by default", () => {
+      const { module, capture } = loadModule({ timeout: 1000 });
+
+      goIdle(module, capture);
       capture({ score: 42, hasMotion: true });
 
-      assert.deepStrictEqual(module.notifications, [["notification", "MOTION_DETECTED", { score: 42 }]]);
+      assert.ok(!hasSelfie(module));
     });
 
-    it("is broadcast alongside MOTION_DETECTED when configured", () => {
+    it("fires on the arrival edge with the score payload", () => {
+      const { module, capture } = loadModule({ additionalNotification: "TAKE_SELFIE", timeout: 1000 });
+
+      goIdle(module, capture);
+      capture({ score: 42, hasMotion: true });
+
+      assert.ok(
+        module.notifications.some(
+          ([bus, notification, payload]) =>
+            bus === "notification" && notification === "TAKE_SELFIE" && payload.score === 42
+        )
+      );
+    });
+
+    it("does not fire on the first motion, since there was no quiet period", () => {
       const { module, capture } = loadModule({ additionalNotification: "TAKE_SELFIE" });
 
       capture({ score: 42, hasMotion: true });
 
-      assert.deepStrictEqual(module.notifications, [
-        ["notification", "MOTION_DETECTED", { score: 42 }],
-        ["notification", "TAKE_SELFIE", { score: 42 }],
-      ]);
+      assert.ok(!hasSelfie(module));
+    });
+
+    it("does not repeat while motion continues", () => {
+      const { module, capture } = loadModule({ additionalNotification: "TAKE_SELFIE", timeout: 1000 });
+
+      goIdle(module, capture);
+      capture({ score: 42, hasMotion: true }); // arrival, fires
+      module.notifications.length = 0;
+      capture({ score: 50, hasMotion: true }); // still present, must not fire again
+
+      assert.ok(!hasSelfie(module));
+    });
+
+    it("fires again on a second arrival after going quiet once more", () => {
+      const { module, capture } = loadModule({ additionalNotification: "TAKE_SELFIE", timeout: 1000 });
+
+      goIdle(module, capture);
+      capture({ score: 42, hasMotion: true });
+      goIdle(module, capture);
+      capture({ score: 42, hasMotion: true });
+
+      assert.ok(hasSelfie(module));
     });
 
     it("is not sent when there is no motion", () => {
-      const { module, capture } = loadModule({ additionalNotification: "TAKE_SELFIE" });
+      const { module, capture } = loadModule({ additionalNotification: "TAKE_SELFIE", timeout: 1000 });
 
+      setLastMotionAge(module, 5000);
       capture({ score: 1, hasMotion: false });
 
-      assert.ok(!module.notifications.some(([, notification]) => notification === "TAKE_SELFIE"));
+      assert.ok(!hasSelfie(module));
+    });
+
+    it("fires on arrival even when display control is off", () => {
+      const { module, capture } = loadModule({
+        additionalNotification: "TAKE_SELFIE",
+        controlDisplay: false,
+        timeout: 1000,
+      });
+
+      goIdle(module, capture);
+      capture({ score: 42, hasMotion: true });
+
+      assert.ok(hasSelfie(module));
+      assert.ok(!module.notifications.some(([, notification]) => notification === "ACTIVATE_MONITOR"));
+    });
+
+    it("never fires when the timeout is negative, there is no quiet threshold", () => {
+      const { module, capture } = loadModule({ additionalNotification: "TAKE_SELFIE", timeout: -1 });
+
+      setLastMotionAge(module, 24 * 60 * 60 * 1000);
+      capture({ score: 1, hasMotion: false });
+      capture({ score: 42, hasMotion: true });
+
+      assert.ok(!hasSelfie(module));
     });
   });
 

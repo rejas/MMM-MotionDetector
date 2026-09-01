@@ -13,6 +13,7 @@ Module.register("MMM-MotionDetector", {
   lastScoreDetected: null,
   lastTimeMotionDetected: null,
   lastTimePoweredOff: null,
+  idle: false, // true once motion has been absent longer than timeout, drives the arrival edge
   percentagePoweredOff: 0,
   poweredOff: false,
   poweredOffTime: 0,
@@ -92,7 +93,9 @@ Module.register("MMM-MotionDetector", {
         if (hasMotion) {
           Log.info(`Motion detected, score: ${score}`);
           this.sendNotification("MOTION_DETECTED", { score: score });
-          if (this.config.additionalNotification) {
+          // only on the arrival edge: motion returning after a quiet stretch,
+          // not on every frame someone stays in view
+          if (this.idle && this.config.additionalNotification) {
             this.sendNotification(this.config.additionalNotification, { score: score });
           }
           if (this.config.controlDisplay && this.poweredOff) {
@@ -101,13 +104,20 @@ Module.register("MMM-MotionDetector", {
             Log.info(`Percentage of uptime powered off:  ${this.percentagePoweredOff}`);
             this.sendSocketNotification("ACTIVATE_MONITOR");
           }
+          this.idle = false;
           this.lastTimeMotionDetected = currentDate;
         } else {
           const time = currentDate.getTime() - this.lastTimeMotionDetected.getTime();
-          if (this.config.controlDisplay && this.config.timeout >= 0 && time > this.config.timeout && !this.poweredOff) {
-            this.sendSocketNotification("DEACTIVATE_MONITOR");
-            this.lastTimePoweredOff = currentDate;
-            this.poweredOff = true;
+          if (this.config.timeout >= 0 && time > this.config.timeout) {
+            // the quiet threshold is display-independent so the arrival edge
+            // still works when controlDisplay is off, but powering the monitor
+            // down stays gated on controlDisplay
+            this.idle = true;
+            if (this.config.controlDisplay && !this.poweredOff) {
+              this.sendSocketNotification("DEACTIVATE_MONITOR");
+              this.lastTimePoweredOff = currentDate;
+              this.poweredOff = true;
+            }
           }
         }
         this.lastScoreDetected = score;

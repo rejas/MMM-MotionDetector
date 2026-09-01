@@ -59,15 +59,15 @@ modules: [
 
 The following properties can be configured:
 
-| Option                   | Description                                                                                                                                                              | Default value |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------- |
-| `additionalNotification` | An extra notification broadcast to all modules whenever motion is detected, with the same `{ score }` payload as `MOTION_DETECTED`. Set to a notification name to enable | `null`        |
-| `captureIntervalTime`    | Time in ms between capturing images for detection                                                                                                                        | `1000`        |
-| `controlDisplay`         | Whether this module switches the monitor on and off. Set to `false` to detect motion and send notifications without touching the display                                 | `true`        |
-| `deviceId`               | (optional) specify which camera to use in case multiple exist in the system.                                                                                             |               |
-| `platform`               | On what platforms this runs. <br><br>**Possible values:** `cec` (untested), `labwc`, `mac-arm`, `mac-intel`, `x11`                                                       | `x11`         |
-| `scoreThreshold`         | Threshold minimum for an image to be considered significant.<br><br>Set to 0 to treat any movement as motion                                                             | `20`          |
-| `timeout`                | Time in ms after which monitor is turned off when no motion is detected<br><br>Set to -1 to never turn off the monitor                                                   | `120000`      |
+| Option                   | Description                                                                                                                                                                                                                                                                | Default value |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| `additionalNotification` | An extra notification broadcast to all modules when someone arrives, i.e. motion returns after `timeout` of quiet, with a `{ score }` payload. Fires once per arrival, not every frame. Set to a notification name to enable. Needs `timeout >= 0` to have an arrival edge | `null`        |
+| `captureIntervalTime`    | Time in ms between capturing images for detection                                                                                                                                                                                                                          | `1000`        |
+| `controlDisplay`         | Whether this module switches the monitor on and off. Set to `false` to detect motion and send notifications without touching the display                                                                                                                                   | `true`        |
+| `deviceId`               | (optional) specify which camera to use in case multiple exist in the system.                                                                                                                                                                                               |               |
+| `platform`               | On what platforms this runs. <br><br>**Possible values:** `cec` (untested), `labwc`, `mac-arm`, `mac-intel`, `x11`                                                                                                                                                         | `x11`         |
+| `scoreThreshold`         | Threshold minimum for an image to be considered significant.<br><br>Set to 0 to treat any movement as motion                                                                                                                                                               | `20`          |
+| `timeout`                | Time in ms after which monitor is turned off when no motion is detected<br><br>Set to -1 to never turn off the monitor                                                                                                                                                     | `120000`      |
 
 #### How to get the deviceId
 
@@ -151,10 +151,10 @@ As you are bypassing browser security with this workaround you may want to add s
 
 These are broadcast to the other modules on your mirror:
 
-| Notification               | Payload            | Description                                                                                                                |
-| -------------------------- | ------------------ | -------------------------------------------------------------------------------------------------------------------------- |
-| `MOTION_DETECTED`          | `{ score: <int> }` | number of pixels the diff-cam-engine saw change in the current frame, always 1 or greater                                  |
-| _`additionalNotification`_ | `{ score: <int> }` | only if configured, sent on the same frames as `MOTION_DETECTED` with the notification name you chose (e.g. `TAKE_SELFIE`) |
+| Notification               | Payload            | Description                                                                                                                                  |
+| -------------------------- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `MOTION_DETECTED`          | `{ score: <int> }` | number of pixels the diff-cam-engine saw change in the current frame, always 1 or greater                                                    |
+| _`additionalNotification`_ | `{ score: <int> }` | only if configured, sent once when someone arrives (motion after a quiet stretch) under the notification name you chose (e.g. `TAKE_SELFIE`) |
 
 `ACTIVATE_MONITOR` and `DEACTIVATE_MONITOR` are also sent, but only over the socket to this module's own node helper,
 which switches the monitor on and off. They carry no payload and cannot be observed by other modules.
