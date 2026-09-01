@@ -6,6 +6,11 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [develop](https://github.com/rejas/MMM-MotionDetector/compare/v1.8.1...develop) - unreleased
 
+### Added
+
+- `controlDisplay` option (default `true`), set it to `false` to detect motion and send notifications without switching the monitor on or off (#113)
+- `additionalNotification` option, broadcasts a user-named notification with the `{ score }` payload when someone arrives, i.e. motion returns after `timeout` of quiet (#113)
+
 ## [1.8.1](https://github.com/rejas/MMM-MotionDetector/compare/v1.8.0...v1.8.1) - 2026-09-01
 
 ### Changed
