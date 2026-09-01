@@ -6,11 +6,14 @@ Module.register("MMM-MotionDetector", {
     scoreThreshold: 20,
     timeout: 120000, // 2 minutes,
     deviceId: null,
+    controlDisplay: true, // switch the monitor on and off, set false to only detect motion
+    additionalNotification: null, // extra notification broadcast to other modules on motion
   },
 
   lastScoreDetected: null,
   lastTimeMotionDetected: null,
   lastTimePoweredOff: null,
+  idle: false, // true once motion has been absent longer than timeout, drives the arrival edge
   percentagePoweredOff: 0,
   poweredOff: false,
   poweredOffTime: 0,
@@ -49,7 +52,9 @@ Module.register("MMM-MotionDetector", {
     this.lastTimePoweredOff = new Date();
     this.timeStarted = new Date().getTime();
 
-    this.sendSocketNotification("INIT_MONITOR", this.config.platform);
+    if (this.config.controlDisplay) {
+      this.sendSocketNotification("INIT_MONITOR", this.config.platform);
+    }
 
     const canvas = document.createElement("canvas");
     const video = document.createElement("video");
@@ -88,19 +93,31 @@ Module.register("MMM-MotionDetector", {
         if (hasMotion) {
           Log.info(`Motion detected, score: ${score}`);
           this.sendNotification("MOTION_DETECTED", { score: score });
-          if (this.poweredOff) {
+          // only on the arrival edge: motion returning after a quiet stretch,
+          // not on every frame someone stays in view
+          if (this.idle && this.config.additionalNotification) {
+            this.sendNotification(this.config.additionalNotification, { score: score });
+          }
+          if (this.config.controlDisplay && this.poweredOff) {
             this.poweredOffTime = poweredOffSoFar;
             this.poweredOff = false;
             Log.info(`Percentage of uptime powered off:  ${this.percentagePoweredOff}`);
             this.sendSocketNotification("ACTIVATE_MONITOR");
           }
+          this.idle = false;
           this.lastTimeMotionDetected = currentDate;
         } else {
           const time = currentDate.getTime() - this.lastTimeMotionDetected.getTime();
-          if (this.config.timeout >= 0 && time > this.config.timeout && !this.poweredOff) {
-            this.sendSocketNotification("DEACTIVATE_MONITOR");
-            this.lastTimePoweredOff = currentDate;
-            this.poweredOff = true;
+          if (this.config.timeout >= 0 && time > this.config.timeout) {
+            // the quiet threshold is display-independent so the arrival edge
+            // still works when controlDisplay is off, but powering the monitor
+            // down stays gated on controlDisplay
+            this.idle = true;
+            if (this.config.controlDisplay && !this.poweredOff) {
+              this.sendSocketNotification("DEACTIVATE_MONITOR");
+              this.lastTimePoweredOff = currentDate;
+              this.poweredOff = true;
+            }
           }
         }
         this.lastScoreDetected = score;
