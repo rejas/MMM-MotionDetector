@@ -31,12 +31,35 @@ Chromium and Electron only offer the camera permission on `localhost` and `127.0
 
 ### Raspberry Pi OS
 
-Getting the camera to work on current Raspberry Pi OS releases is still unresolved, see
-[issue #56](https://github.com/rejas/MMM-MotionDetector/issues/56). The workaround that used to be documented here
-relied on the legacy camera stack, which no longer exists on Bookworm and later, so it has been removed rather than
-left as misleading advice.
+MMM-MotionDetector supports two camera backends:
 
-Any help getting this module running on current Raspberry Pi OS is greatly appreciated.
+- `browser` - the original Electron/Chromium `getUserMedia()` backend
+- `v4l2` - a server-side backend using a Linux V4L2 device and `ffmpeg`
+
+The `browser` backend remains the default and keeps the original behavior.
+
+The `v4l2` backend can be useful on Raspberry Pi systems where the camera is available
+as `/dev/video*` but is not exposed to Electron as a browser video input.
+
+Example:
+
+    config: {
+      cameraBackend: "v4l2",
+      cameraDevice: "/dev/video0"
+    }
+
+Requirements for the V4L2 backend:
+
+- `ffmpeg` must be installed
+- the camera must be available as a V4L2 device such as `/dev/video0`
+- the user running MagicMirror must have permission to access the device
+
+Available V4L2 devices can be listed with:
+
+    v4l2-ctl --list-devices
+
+The V4L2 backend does not require Electron camera access. How the `/dev/video*`
+device is provided depends on the Raspberry Pi OS and camera stack in use.
 
 ## Configuration
 
@@ -59,13 +82,19 @@ modules: [
 
 The following properties can be configured:
 
-| Option                | Description                                                                                                            | Default value |
-| --------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------- |
-| `captureIntervalTime` | Time in ms between capturing images for detection                                                                      | `1000`        |
-| `deviceId`            | (optional) specify which camera to use in case multiple exist in the system.                                           |               |
-| `platform`            | On what platforms this runs. <br><br>**Possible values:** `cec` (untested), `labwc`, `mac-arm`, `mac-intel`, `x11`     | `x11`         |
-| `scoreThreshold`      | Threshold minimum for an image to be considered significant.<br><br>Set to 0 to treat any movement as motion           | `20`          |
-| `timeout`             | Time in ms after which monitor is turned off when no motion is detected<br><br>Set to -1 to never turn off the monitor | `120000`      |
+| Option | Description | Default value |
+| --- | --- | --- |
+| `cameraBackend` | Camera backend to use. `browser` keeps the original Electron/Chromium camera handling. `v4l2` reads a Linux video device server-side using `ffmpeg`. | `browser` |
+| `cameraDevice` | V4L2 device used by the `v4l2` backend. | `/dev/video0` |
+| `captureIntervalTime` | Time in ms between capturing images for detection. | `1000` |
+| `deviceId` | Browser/Electron camera device ID used by the `browser` backend. | |
+| `platform` | On what platforms this runs.<br><br>**Possible values:** `cec`, `labwc`, `mac-arm`, `mac-intel`, `x11` | `x11` |
+| `scoreThreshold` | Minimum number of changed pixels required for motion detection.<br><br>Set to `0` to treat any movement as motion. | `20` |
+| `pixelDiffThreshold` | Minimum brightness difference for a pixel to count as changed in the V4L2 backend. | `30` |
+| `lightChangeThreshold` | Minimum average brightness change used to detect sudden global lighting changes in the V4L2 backend. | `12` |
+| `lightChangePixelRatio` | Minimum ratio of changed pixels required for a global light-change event. | `0.55` |
+| `lightChangeDirectionRatio` | Minimum ratio of changed pixels moving in the same brightness direction for a light-change event. | `0.80` |
+| `timeout` | Time in ms after which the monitor is turned off when no motion is detected.<br><br>Set to `-1` to never turn off the monitor. | `120000` |
 
 #### How to get the deviceId
 

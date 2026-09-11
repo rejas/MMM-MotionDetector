@@ -1,11 +1,19 @@
 /* global DiffCamEngine, Log, Module, moment */
 Module.register("MMM-MotionDetector", {
   defaults: {
+    cameraBackend: "browser",
     captureIntervalTime: 1000, // 1 second
     platform: "x11",
     scoreThreshold: 20,
     timeout: 120000, // 2 minutes,
     deviceId: null,
+
+    cameraDevice: "/dev/video0",
+    pixelDiffThreshold: 30,
+    lightChangeThreshold: 12,
+    lightChangePixelRatio: 0.55,
+    lightChangeDirectionRatio: 0.80,
+    autoHideOnNoMotion: true,
   },
 
   lastScoreDetected: null,
@@ -40,6 +48,64 @@ Module.register("MMM-MotionDetector", {
     };
   },
 
+  socketNotificationReceived: function (notification, payload) {
+    if (this.config.cameraBackend !== "v4l2") {
+      return;
+    }
+
+    if (notification === "V4L2_CAMERA_STARTED") {
+      Log.info("V4L2 camera started: " + payload.device);
+      this.error = null;
+
+      if (this.data.position) {
+        this.updateDom();
+      }
+
+      return;
+    }
+
+    if (notification === "V4L2_CAMERA_ERROR") {
+      this.error = payload.error;
+      Log.error("V4L2 camera failed: " + payload.error);
+
+      if (this.data.position) {
+        this.updateDom();
+      }
+
+      return;
+    }
+
+    if (notification === "V4L2_MOTION_STATUS") {
+      const currentDate = new Date();
+
+      this.lastScoreDetected = payload.score;
+
+      if (payload.hasMotion) {
+        this.lastTimeMotionDetected = currentDate;
+
+        this.sendNotification("MOTION_DETECTED", {
+          score: payload.score
+        });
+      }
+
+      if (payload.monitorOn === false && !this.poweredOff) {
+        this.lastTimePoweredOff = currentDate;
+        this.poweredOff = true;
+      }
+
+      if (payload.monitorOn === true && this.poweredOff) {
+        this.poweredOffTime +=
+          currentDate.getTime() - this.lastTimePoweredOff.getTime();
+
+        this.poweredOff = false;
+      }
+
+      if (this.data.position) {
+        this.updateDom();
+      }
+    }
+  },
+
   start: function () {
     Log.info("starting up for platform " + this.config.platform + ".");
 
@@ -50,6 +116,12 @@ Module.register("MMM-MotionDetector", {
     this.timeStarted = new Date().getTime();
 
     this.sendSocketNotification("INIT_MONITOR", this.config.platform);
+
+    if (this.config.cameraBackend === "v4l2") {
+      Log.info("starting V4L2 motion backend.");
+      this.sendSocketNotification("INIT_V4L2", this.config);
+      return;
+    }
 
     const canvas = document.createElement("canvas");
     const video = document.createElement("video");
