@@ -15,7 +15,7 @@ vollständig rückwärtskompatibel bleiben. ERLEDIGT (siehe Punkt 8/9).
 
 - Branch: `v4l2-backend`
 - HEAD vor dieser Sitzung: `be648c9` "Add optional V4L2 motion backend"
-- Neuer Commit dieser Sitzung: siehe Punkt 14 (wird nach dem Commit ergänzt)
+- Neuer Commit dieser Sitzung: `67290c5` "Fix V4L2 lifecycle and motion state handling" — ERLEDIGT, nach `origin/v4l2-backend` gepusht.
 
 ## 4. Git-Worktree-Status
 
@@ -105,7 +105,7 @@ Siehe Abschlussbericht im Chat (Punkte 1–13 der geforderten Struktur). Kurzfas
 - Kein offener Implementierungspunkt aus dem A–D-Katalog. Optional/offen (nur nach Rücksprache):
   Copilot-Finding "hardcodierte ffmpeg `-video_size 320x240`" – bewusst nicht angefasst
   (siehe Punkt 6). Reale Hardware-Verifikation auf Raspberry Pi steht noch aus (s. Abschlussbericht).
-- Commit wurde in dieser Sitzung erstellt; Push-Status siehe Abschlussbericht/Git-Log.
+- Commit `67290c5` wurde erstellt und erfolgreich nach `origin/v4l2-backend` gepusht (ERLEDIGT).
 
 ## 10. Teststatus mit Ergebnissen
 
@@ -114,25 +114,26 @@ Siehe Abschlussbericht im Chat (Punkte 1–13 der geforderten Struktur). Kurzfas
   neue Testfälle für den V4L2-Pfad.
 - `node --run test:spelling` (cspell): **0 Issues** (nach Ergänzung von "rawvideo").
 - `node --run lint` (`eslint && prettier . --check`): eslint meldet **0 Fehler**. `prettier --check`
-  meldet **6 vorbestehende** CRLF-bedingte Formatierungswarnungen in Dateien, die in dieser Sitzung
-  NICHT verändert wurden (`.github/dependabot.yaml`, `.github/workflows/automated-tests.yaml`,
-  `CHANGELOG.md`, `cspell.config.json`, `package-lock.json`, `package.json`). Verifiziert per
-  `git stash` + Lauf auf unverändertem `origin/v4l2-backend`-HEAD: **identischer Fehler besteht
-  bereits vor jeder Änderung dieser Sitzung** (Ursache: lokales `core.autocrlf=true` unter Windows,
-  Repository-Blobs sind LF, CI läuft auf Linux und ist nicht betroffen). `cspell.config.json` wurde
-  inhaltlich geändert (Wort ergänzt), ist aber bereits vorher CRLF gewesen und daher weiterhin in
-  dieser Liste – kein neuer Fehler. `README.md` wurde erfolgreich auf LF normalisiert und ist
-  NICHT mehr in der Fehlerliste.
+  meldet **5 vorbestehende** CRLF-bedingte Formatierungswarnungen in Dateien, die in dieser Sitzung
+  inhaltlich NICHT verändert wurden (`.github/dependabot.yaml`, `.github/workflows/automated-tests.yaml`,
+  `CHANGELOG.md`, `package-lock.json`, `package.json`). Verifiziert per `git stash` + Lauf auf
+  unverändertem `origin/v4l2-backend`-HEAD: **identischer Fehler besteht bereits vor jeder Änderung
+  dieser Sitzung** (Ursache: lokales `core.autocrlf=true` unter Windows, Repository-Blobs sind LF,
+  CI läuft auf Linux und ist nicht betroffen). `README.md` und `cspell.config.json` (durch den
+  `lint-staged`-Pre-Commit-Hook automatisch mit `prettier --write` normalisiert) sind NICHT mehr in
+  der Fehlerliste. Nach dem Commit erneut geprüft: weiterhin exakt diese 5 vorbestehenden Dateien,
+  keine neuen.
 - `node --check MMM-MotionDetector.js`, `node --check node_helper.js`: **OK**.
 - `git diff --check`: **keine Whitespace-Fehler**.
 
 ## 11. Bekannte Fehler/Blocker
 
-- `node --run lint` schlägt lokal wegen der 6 o.g. vorbestehenden CRLF-Dateien fehl (exit 1),
-  unabhängig von dieser Sitzung. Nicht behoben, da Root Cause eine lokale Git-Konfiguration
-  (`core.autocrlf=true`) ist, die laut Vorgabe nicht verändert werden darf, und ein Reformatieren
-  der 6 fremden Dateien unbeabsichtigte Diffs (u. a. in `package-lock.json`) erzeugen würde.
-  CI (GitHub Actions, Linux) ist davon nicht betroffen.
+- `node --run lint` (und damit `node --run test` als Gesamtkette) schlägt lokal wegen der 5 o.g.
+  vorbestehenden CRLF-Dateien fehl (exit 1), unabhängig von dieser Sitzung. Nicht behoben, da Root
+  Cause eine lokale Git-Konfiguration (`core.autocrlf=true`) ist, die laut Vorgabe nicht verändert
+  werden darf, und ein Reformatieren der 5 fremden Dateien unbeabsichtigte Diffs (u. a. in
+  `package-lock.json`) erzeugen würde. CI (GitHub Actions, Linux) ist davon nicht betroffen.
+  `eslint`, `test:spelling` und `test:unit` laufen jeweils einzeln grün.
 
 ## 12. Datenbank-/Schemaänderungen
 
@@ -149,16 +150,21 @@ Kein Build-Schritt im Projekt (reines JS-Modul, kein Bundling). `npm ci` erfolgr
 
 ## 15. Exakter nächster sinnvoller Arbeitsschritt
 
-1. `git status`/`git diff` final prüfen (siehe Abschlussbericht).
-2. Commit erstellen: "Fix V4L2 lifecycle and motion state handling".
-3. Push-Versuch zu `origin v4l2-backend`; falls nicht möglich (kein Schreibzugriff aus dieser
-   Umgebung), dem Nutzer den lokalen Commit-SHA mitteilen und um manuellen Push bitten.
-4. Reale Verifikation auf Raspberry-Pi-Hardware nachholen (siehe Abschlussbericht Punkt 13).
+Alle Implementierungsschritte dieser Aufgabe sind ERLEDIGT und gepusht. Nächster sinnvoller Schritt
+liegt außerhalb dieser Sitzung:
+
+1. Reale Verifikation auf Raspberry-Pi-Hardware nachholen (Motion-Erkennung, Timeout/Wake,
+   ffmpeg-Fehlerfälle wie fehlendes Device/Permission denied/Device busy) — s. Abschlussbericht Punkt 13.
+2. Optional: Entscheidung des Auftraggebers einholen, ob das zusätzliche Copilot-Finding zur
+   hardcodierten ffmpeg `-video_size 320x240` (Punkt 6/9 oben) noch angegangen werden soll.
+3. Optional: GitHub-PR-Review-Threads zu den vier behobenen Findings (Zeilen 81/181/263/190) als
+   "resolved" markieren bzw. kommentieren, sobald die Hardware-Verifikation steht.
 
 ## 16. Laufender Befehl/Test
 
-Kein Befehl/Test läuft aktuell im Hintergrund. Letzter Lauf: `node --run test` (lint+spelling+unit)
-mit obigem Ergebnis (Punkt 10).
+Kein Befehl/Test läuft aktuell im Hintergrund. Letzter Lauf: `node --run test:unit` (106/106 pass),
+`node --run test:spelling` (0 Issues) und `node --run lint` (eslint 0 Fehler, prettier 5
+vorbestehende Fremd-Dateien) — jeweils nach dem finalen Commit `67290c5` erneut verifiziert.
 
 ## 17. Entscheidungen des Auftraggebers, die für die Fortsetzung relevant sind
 
