@@ -8,8 +8,8 @@ const HELPER_PATH = path.join(__dirname, "..", "node_helper.js");
 /**
  * Build a fake child process good enough to stand in for the ffmpeg process
  * spawned by the V4L2 backend: an EventEmitter with stdout/stderr streams
- * (also EventEmitters) and a kill() that just records what it was called with,
- * so tests can drive "data", "error" and "exit" by hand.
+ * (also EventEmitters) and a kill() that records the signal and exits immediately.
+ * Tests can override kill() to model delayed termination and drive stream events.
  * @returns {EventEmitter}
  */
 function createFakeProcess() {
@@ -19,6 +19,8 @@ function createFakeProcess() {
   proc.killSignals = [];
   proc.kill = (signal) => {
     proc.killSignals.push(signal);
+    proc.emit("exit", null, signal);
+    return true;
   };
   return proc;
 }

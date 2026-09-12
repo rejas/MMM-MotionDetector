@@ -120,23 +120,40 @@ module.exports = NodeHelper.create({
       return;
     }
 
-    this.v4l2Process.v4l2Intentional = true;
-    this.v4l2Process.kill("SIGTERM");
-    this.v4l2Process = null;
+    const proc = this.v4l2Process;
+    if (proc.v4l2Intentional) {
+      return;
+    }
+    proc.v4l2Intentional = true;
+    proc.v4l2StopTimer = setTimeout(() => {
+      if (this.v4l2Process === proc) {
+        proc.kill("SIGKILL");
+      }
+    }, 2000);
+    proc.v4l2StopTimer.unref();
+    proc.kill("SIGTERM");
+  },
+
+  stop () {
+    this.v4l2PendingConfig = null;
+    this.stopV4L2();
   },
 
   startV4L2 (config) {
+    // A delivered signal does not prove that the old camera released its device.
+    // Keep only the latest request and start it after the old process exits.
+    if (this.v4l2Process) {
+      this.v4l2PendingConfig = config;
+      this.stopV4L2();
+      return;
+    }
     this.v4l2Config = config;
-
-    // a second INIT_V4L2 (or a restart) must not leave two ffmpeg processes
-    // running, and the old one's termination is expected, not an error
-    this.stopV4L2();
 
     this.v4l2FrameBuffer = Buffer.alloc(0);
     this.v4l2PreviousFrame = null;
     this.v4l2IgnoreNextFrame = false;
     this.v4l2LastMotionAt = Date.now();
-    this.v4l2MonitorOn = true;
+    this.v4l2MonitorOn ??= true;
 
     const width = 160;
     const height = 120;
@@ -177,7 +194,7 @@ module.exports = NodeHelper.create({
       // a process that was replaced by a later restart may still have
       // buffered events in flight; its data must not feed the new process's
       // frame buffer
-      if (this.v4l2Process !== proc) {
+      if (this.v4l2Process !== proc || proc.v4l2Intentional || proc.v4l2Failed) {
         return;
       }
 
@@ -210,7 +227,7 @@ module.exports = NodeHelper.create({
     });
 
     proc.stderr.on("data", (data) => {
-      if (this.v4l2Process !== proc) {
+      if (this.v4l2Process !== proc || proc.v4l2Intentional || proc.v4l2Failed) {
         return;
       }
 
@@ -222,35 +239,42 @@ module.exports = NodeHelper.create({
     });
 
     proc.on("error", (error) => {
-      if (this.v4l2Process === proc) {
-        this.v4l2Process = null;
+      if (this.v4l2Process !== proc || proc.v4l2Intentional || proc.v4l2Failed) {
+        return;
       }
-
+      proc.v4l2Failed = true;
       Log.error(`V4L2 camera failed: ${error.message}`);
-
       this.sendSocketNotification("V4L2_CAMERA_ERROR", {
         error: error.message
       });
     });
 
-    proc.on("exit", (code, signal) => {
-      if (this.v4l2Process === proc) {
-        this.v4l2Process = null;
-      }
-
-      if (proc.v4l2Intentional) {
-        Log.info(`V4L2 ffmpeg stopped (signal=${signal}).`);
+    const finished = (code, signal) => {
+      if (this.v4l2Process !== proc) {
         return;
       }
+      clearTimeout(proc.v4l2StopTimer);
+      this.v4l2Process = null;
+      this.v4l2FrameBuffer = Buffer.alloc(0);
+      this.v4l2PreviousFrame = null;
 
-      Log.error(
-        `V4L2 ffmpeg exited unexpectedly (code=${code}, signal=${signal}).`
-      );
-
-      this.sendSocketNotification("V4L2_CAMERA_ERROR", {
-        error: `ffmpeg exited unexpectedly (code=${code}, signal=${signal})`
-      });
-    });
+      if (!proc.v4l2Intentional && !proc.v4l2Failed) {
+        Log.error(
+          `V4L2 ffmpeg exited unexpectedly (code=${code}, signal=${signal}).`
+        );
+        this.sendSocketNotification("V4L2_CAMERA_ERROR", {
+          error: `ffmpeg exited unexpectedly (code=${code}, signal=${signal})`
+        });
+      }
+      const pending = this.v4l2PendingConfig;
+      this.v4l2PendingConfig = null;
+      if (pending) {
+        this.startV4L2(pending);
+      }
+    };
+    proc.on("exit", finished);
+    // Failed spawns emit close without necessarily emitting exit.
+    proc.on("close", finished);
   },
 
   processV4L2Frame (frame) {
@@ -318,12 +342,14 @@ module.exports = NodeHelper.create({
       );
 
       this.v4l2IgnoreNextFrame = true;
+      this.processV4L2NoMotion(score, false);
       return;
     }
 
     if (this.v4l2IgnoreNextFrame) {
       this.v4l2IgnoreNextFrame = false;
       Log.info("stabilization frame ignored.");
+      this.processV4L2NoMotion(score, false);
       return;
     }
 
@@ -338,34 +364,35 @@ module.exports = NodeHelper.create({
 
       Log.info(`Motion detected, score: ${score}`);
 
-      this.sendSocketNotification("V4L2_MOTION_STATUS", {
-        score,
-        hasMotion: true,
-        monitorOn: this.v4l2MonitorOn
-      });
-
       if (!this.v4l2MonitorOn) {
         this.v4l2MonitorOn = true;
+        const request = this.v4l2MonitorRequest = (this.v4l2MonitorRequest || 0) + 1;
 
         this.activateMonitor()
           .then(() => Log.info("monitor has been activated."))
           .catch((error) => {
-            this.v4l2MonitorOn = false;
+            if (this.v4l2MonitorRequest === request) {
+              this.v4l2MonitorOn = false;
+            }
             Log.error(
               `error activating monitor: ${describeError(error)}`
             );
           });
       }
 
+      this.sendSocketNotification("V4L2_MOTION_STATUS", {
+        score,
+        hasMotion: true,
+        monitorOn: this.v4l2MonitorOn
+      });
       return;
     }
 
-    this.sendSocketNotification("V4L2_MOTION_STATUS", {
-      score,
-      hasMotion: false,
-      monitorOn: this.v4l2MonitorOn
-    });
+    this.processV4L2NoMotion(score);
+  },
 
+  processV4L2NoMotion (score, notify = true) {
+    const config = this.v4l2Config;
     const timeout = toConfigNumber(config.timeout, 120000);
 
     if (
@@ -375,17 +402,28 @@ module.exports = NodeHelper.create({
       this.v4l2MonitorOn
     ) {
       this.v4l2MonitorOn = false;
+      notify = true;
+      const request = this.v4l2MonitorRequest = (this.v4l2MonitorRequest || 0) + 1;
 
       Log.info("deactivating monitor");
 
       this.deactivateMonitor()
         .then(() => Log.info("monitor has been deactivated."))
         .catch((error) => {
-          this.v4l2MonitorOn = true;
+          if (this.v4l2MonitorRequest === request) {
+            this.v4l2MonitorOn = true;
+          }
           Log.error(
             `error deactivating monitor: ${describeError(error)}`
           );
         });
+    }
+    if (notify) {
+      this.sendSocketNotification("V4L2_MOTION_STATUS", {
+        score,
+        hasMotion: false,
+        monitorOn: this.v4l2MonitorOn
+      });
     }
   },
 
