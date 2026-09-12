@@ -6,6 +6,9 @@ const Log = require("../../js/logger");
 const path = require("path");
 
 const VALID_PLATFORMS = ["x11", "cec", "labwc", "mac-arm", "mac-intel"];
+// A change covering a quarter of the image can be an early exposure step.
+// This only requests one frame of confirmation; it does not classify light.
+const V4L2_WAKE_CONFIRM_PIXEL_RATIO = 0.25;
 
 /**
  * Describe a failed monitor command. A script that ran and failed carries
@@ -116,6 +119,7 @@ module.exports = NodeHelper.create({
    * intentional so the "exit" handler does not report it as a camera error.
    */
   stopV4L2 () {
+    this.v4l2PendingMotionScore = 0;
     if (!this.v4l2Process) {
       return;
     }
@@ -152,6 +156,7 @@ module.exports = NodeHelper.create({
     this.v4l2FrameBuffer = Buffer.alloc(0);
     this.v4l2PreviousFrame = null;
     this.v4l2IgnoreNextFrame = false;
+    this.v4l2PendingMotionScore = 0;
     this.v4l2LastMotionAt = Date.now();
     this.v4l2MonitorOn ??= true;
 
@@ -243,6 +248,7 @@ module.exports = NodeHelper.create({
         return;
       }
       proc.v4l2Failed = true;
+      this.v4l2PendingMotionScore = 0;
       Log.error(`V4L2 camera failed: ${error.message}`);
       this.sendSocketNotification("V4L2_CAMERA_ERROR", {
         error: error.message
@@ -257,6 +263,7 @@ module.exports = NodeHelper.create({
       this.v4l2Process = null;
       this.v4l2FrameBuffer = Buffer.alloc(0);
       this.v4l2PreviousFrame = null;
+      this.v4l2PendingMotionScore = 0;
 
       if (!proc.v4l2Intentional && !proc.v4l2Failed) {
         Log.error(
@@ -332,6 +339,8 @@ module.exports = NodeHelper.create({
         toConfigNumber(config.lightChangeDirectionRatio, 0.80);
 
     this.v4l2PreviousFrame = Buffer.from(frame);
+    const pendingMotionScore = this.v4l2PendingMotionScore || 0;
+    this.v4l2PendingMotionScore = 0;
 
     if (isLightChange) {
       Log.info(
@@ -353,11 +362,26 @@ module.exports = NodeHelper.create({
       return;
     }
 
+    // A confirmed light/stabilization frame above discards the pending candidate.
+    // Otherwise retain it even if the person stopped moving in this frame.
+    score = Math.max(score, pendingMotionScore);
+
     // a score of zero means not a single pixel changed, which is never
     // motion, not even at a scoreThreshold of zero; matches the DiffCamEngine
     // semantics used by the browser backend
     const hasMotion =
       score > 0 && score >= toConfigNumber(config.scoreThreshold, 20);
+
+    if (
+      hasMotion &&
+      !this.v4l2MonitorOn &&
+      pendingMotionScore === 0 &&
+      changedPixelRatio >= V4L2_WAKE_CONFIRM_PIXEL_RATIO
+    ) {
+      this.v4l2PendingMotionScore = score;
+      this.processV4L2NoMotion(score);
+      return;
+    }
 
     if (hasMotion) {
       this.v4l2LastMotionAt = Date.now();
