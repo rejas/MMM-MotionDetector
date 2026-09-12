@@ -82,19 +82,20 @@ modules: [
 
 The following properties can be configured:
 
-| Option | Description | Default value |
-| --- | --- | --- |
-| `cameraBackend` | Camera backend to use. `browser` keeps the original Electron/Chromium camera handling. `v4l2` reads a Linux video device server-side using `ffmpeg`. | `browser` |
-| `cameraDevice` | V4L2 device used by the `v4l2` backend. | `/dev/video0` |
-| `captureIntervalTime` | Time in ms between capturing images for detection. | `1000` |
-| `deviceId` | Browser/Electron camera device ID used by the `browser` backend. | |
-| `platform` | On what platforms this runs.<br><br>**Possible values:** `cec`, `labwc`, `mac-arm`, `mac-intel`, `x11` | `x11` |
-| `scoreThreshold` | Minimum number of changed pixels required for motion detection.<br><br>Set to `0` to treat any movement as motion. | `20` |
-| `pixelDiffThreshold` | Minimum brightness difference for a pixel to count as changed in the V4L2 backend. | `30` |
-| `lightChangeThreshold` | Minimum average brightness change used to detect sudden global lighting changes in the V4L2 backend. | `12` |
-| `lightChangePixelRatio` | Minimum ratio of changed pixels required for a global light-change event. | `0.55` |
-| `lightChangeDirectionRatio` | Minimum ratio of changed pixels moving in the same brightness direction for a light-change event. | `0.80` |
-| `timeout` | Time in ms after which the monitor is turned off when no motion is detected.<br><br>Set to `-1` to never turn off the monitor. | `120000` |
+| Option                      | Description                                                                                                                                                     | Default value |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| `cameraBackend`             | Camera backend to use. `browser` keeps the original Electron/Chromium camera handling. `v4l2` reads a Linux video device server-side using `ffmpeg`.            | `browser`     |
+| `cameraDevice`              | V4L2 device used by the `v4l2` backend.                                                                                                                         | `/dev/video0` |
+| `captureIntervalTime`       | Time in ms between capturing images for detection.                                                                                                              | `1000`        |
+| `deviceId`                  | Browser/Electron camera device ID used by the `browser` backend.                                                                                                |               |
+| `platform`                  | On what platforms this runs.<br><br>**Possible values:** `cec`, `labwc`, `mac-arm`, `mac-intel`, `x11`                                                          | `x11`         |
+| `scoreThreshold`            | Minimum number of changed pixels required for motion detection.<br><br>Set to `0` to treat any movement as motion.                                              | `20`          |
+| `pixelDiffThreshold`        | Minimum brightness difference for a pixel to count as changed in the V4L2 backend.                                                                              | `30`          |
+| `lightChangeThreshold`      | Minimum average brightness change used to detect sudden global lighting changes in the V4L2 backend.                                                            | `12`          |
+| `lightChangePixelRatio`     | Minimum ratio of changed pixels required for a global light-change event.                                                                                       | `0.55`        |
+| `lightChangeDirectionRatio` | Minimum ratio of changed pixels moving in the same brightness direction for a light-change event.                                                               | `0.80`        |
+| `timeout`                   | Time in ms after which the monitor is turned off when no motion is detected.<br><br>Set to `-1` to never turn off the monitor.                                  | `120000`      |
+| `autoHideOnNoMotion`        | Whether the V4L2 backend automatically turns the monitor off once `timeout` elapses without motion. Set to `false` to keep the monitor on regardless of motion. | `true`        |
 
 #### How to get the deviceId
 

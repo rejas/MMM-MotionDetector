@@ -48,6 +48,26 @@ Module.register("MMM-MotionDetector", {
     };
   },
 
+  /**
+   * Compute the running total (and percentage) of time the monitor has spent
+   * powered off, folding in the stretch that is currently in progress. Shared
+   * between the browser and V4L2 backends so both report identical figures.
+   * @param currentDate reference time for "now"
+   * @returns {{poweredOffSoFar: number, percentage: string}}
+   */
+  computePercentagePoweredOff: function (currentDate) {
+    const ongoingPoweredOffTime = this.poweredOff
+      ? Math.max(0, currentDate.getTime() - this.lastTimePoweredOff.getTime())
+      : 0;
+    const poweredOffSoFar = this.poweredOffTime + ongoingPoweredOffTime;
+    const elapsed = currentDate.getTime() - this.timeStarted;
+
+    return {
+      poweredOffSoFar: poweredOffSoFar,
+      percentage: elapsed > 0 ? ((100 * poweredOffSoFar) / elapsed).toFixed(2) : "0.00",
+    };
+  },
+
   socketNotificationReceived: function (notification, payload) {
     if (this.config.cameraBackend !== "v4l2") {
       return;
@@ -80,6 +100,9 @@ Module.register("MMM-MotionDetector", {
 
       this.lastScoreDetected = payload.score;
 
+      const { poweredOffSoFar, percentage } = this.computePercentagePoweredOff(currentDate);
+      this.percentagePoweredOff = percentage;
+
       if (payload.hasMotion) {
         this.lastTimeMotionDetected = currentDate;
 
@@ -94,9 +117,7 @@ Module.register("MMM-MotionDetector", {
       }
 
       if (payload.monitorOn === true && this.poweredOff) {
-        this.poweredOffTime +=
-          currentDate.getTime() - this.lastTimePoweredOff.getTime();
-
+        this.poweredOffTime = poweredOffSoFar;
         this.poweredOff = false;
       }
 
@@ -148,14 +169,8 @@ Module.register("MMM-MotionDetector", {
       captureCallback: ({ score, hasMotion }) => {
         const currentDate = new Date();
 
-        // the stretch that is currently running is not booked into
-        // poweredOffTime yet, so count it in or the figure reads stale for as
-        // long as the monitor is off and reports the previous total on wake
-        const ongoingPoweredOffTime = this.poweredOff
-          ? currentDate.getTime() - this.lastTimePoweredOff.getTime()
-          : 0;
-        const poweredOffSoFar = this.poweredOffTime + ongoingPoweredOffTime;
-        this.percentagePoweredOff = ((100 * poweredOffSoFar) / (currentDate.getTime() - this.timeStarted)).toFixed(2);
+        const { poweredOffSoFar, percentage } = this.computePercentagePoweredOff(currentDate);
+        this.percentagePoweredOff = percentage;
 
         if (hasMotion) {
           Log.info(`Motion detected, score: ${score}`);

@@ -18,6 +18,23 @@ function describeError (error) {
   return stderr || (error && error.message) || String(error);
 }
 
+/**
+ * Coerce a config value to a finite number, falling back only when the value
+ * is missing or cannot be interpreted as a number. Unlike `Number(x) || fallback`,
+ * this keeps an explicit 0 (and negative numbers) instead of silently
+ * replacing them with the fallback.
+ * @param value raw config value
+ * @param fallback used for undefined, null, NaN or non-numeric input
+ * @returns {number}
+ */
+function toConfigNumber (value, fallback) {
+  if (value === undefined || value === null) {
+    return fallback;
+  }
+  const num = Number(value);
+  return Number.isFinite(num) ? num : fallback;
+}
+
 module.exports = NodeHelper.create({
 
   /**
@@ -94,18 +111,32 @@ module.exports = NodeHelper.create({
     await this.runMonitorCommand("off");
   },
 
+  /**
+   * Stop the running ffmpeg process, if any, and mark its termination as
+   * intentional so the "exit" handler does not report it as a camera error.
+   */
+  stopV4L2 () {
+    if (!this.v4l2Process) {
+      return;
+    }
+
+    this.v4l2Process.v4l2Intentional = true;
+    this.v4l2Process.kill("SIGTERM");
+    this.v4l2Process = null;
+  },
+
   startV4L2 (config) {
     this.v4l2Config = config;
+
+    // a second INIT_V4L2 (or a restart) must not leave two ffmpeg processes
+    // running, and the old one's termination is expected, not an error
+    this.stopV4L2();
+
     this.v4l2FrameBuffer = Buffer.alloc(0);
     this.v4l2PreviousFrame = null;
     this.v4l2IgnoreNextFrame = false;
     this.v4l2LastMotionAt = Date.now();
     this.v4l2MonitorOn = true;
-
-    if (this.v4l2Process) {
-      this.v4l2Process.kill("SIGTERM");
-      this.v4l2Process = null;
-    }
 
     const width = 160;
     const height = 120;
@@ -113,17 +144,18 @@ module.exports = NodeHelper.create({
 
     const interval = Math.max(
       200,
-      Number(config.captureIntervalTime) || 1000
+      toConfigNumber(config.captureIntervalTime, 1000)
     );
 
     const fps = 1000 / interval;
+    const device = config.cameraDevice || "/dev/video0";
 
     const args = [
       "-hide_banner",
       "-loglevel", "error",
       "-f", "v4l2",
       "-video_size", "320x240",
-      "-i", config.cameraDevice || "/dev/video0",
+      "-i", device,
       "-vf", `fps=${fps},scale=${width}:${height},format=gray`,
       "-f", "rawvideo",
       "-pix_fmt", "gray",
@@ -131,14 +163,24 @@ module.exports = NodeHelper.create({
     ];
 
     Log.info(
-      `starting V4L2 camera ${config.cameraDevice || "/dev/video0"} (${fps.toFixed(2)} fps).`
+      `starting V4L2 camera ${device} (${fps.toFixed(2)} fps).`
     );
 
-    this.v4l2Process = spawn("ffmpeg", args, {
+    const proc = spawn("ffmpeg", args, {
       stdio: ["ignore", "pipe", "pipe"]
     });
 
-    this.v4l2Process.stdout.on("data", (chunk) => {
+    this.v4l2Process = proc;
+    proc.v4l2Started = false;
+
+    proc.stdout.on("data", (chunk) => {
+      // a process that was replaced by a later restart may still have
+      // buffered events in flight; its data must not feed the new process's
+      // frame buffer
+      if (this.v4l2Process !== proc) {
+        return;
+      }
+
       this.v4l2FrameBuffer = Buffer.concat([
         this.v4l2FrameBuffer,
         chunk
@@ -154,11 +196,24 @@ module.exports = NodeHelper.create({
           this.v4l2FrameSize
         );
 
+        if (!proc.v4l2Started) {
+          proc.v4l2Started = true;
+
+          // only now is it proven that the device and ffmpeg actually
+          // produce usable frames, rather than just that spawn() succeeded
+          Log.info(`V4L2 camera started: ${device}`);
+          this.sendSocketNotification("V4L2_CAMERA_STARTED", { device });
+        }
+
         this.processV4L2Frame(frame);
       }
     });
 
-    this.v4l2Process.stderr.on("data", (data) => {
+    proc.stderr.on("data", (data) => {
+      if (this.v4l2Process !== proc) {
+        return;
+      }
+
       const message = data.toString().trim();
 
       if (message) {
@@ -166,7 +221,11 @@ module.exports = NodeHelper.create({
       }
     });
 
-    this.v4l2Process.on("error", (error) => {
+    proc.on("error", (error) => {
+      if (this.v4l2Process === proc) {
+        this.v4l2Process = null;
+      }
+
       Log.error(`V4L2 camera failed: ${error.message}`);
 
       this.sendSocketNotification("V4L2_CAMERA_ERROR", {
@@ -174,16 +233,23 @@ module.exports = NodeHelper.create({
       });
     });
 
-    this.v4l2Process.on("exit", (code, signal) => {
-      Log.warn(
-        `V4L2 ffmpeg exited (code=${code}, signal=${signal}).`
+    proc.on("exit", (code, signal) => {
+      if (this.v4l2Process === proc) {
+        this.v4l2Process = null;
+      }
+
+      if (proc.v4l2Intentional) {
+        Log.info(`V4L2 ffmpeg stopped (signal=${signal}).`);
+        return;
+      }
+
+      Log.error(
+        `V4L2 ffmpeg exited unexpectedly (code=${code}, signal=${signal}).`
       );
 
-      this.v4l2Process = null;
-    });
-
-    this.sendSocketNotification("V4L2_CAMERA_STARTED", {
-      device: config.cameraDevice || "/dev/video0"
+      this.sendSocketNotification("V4L2_CAMERA_ERROR", {
+        error: `ffmpeg exited unexpectedly (code=${code}, signal=${signal})`
+      });
     });
   },
 
@@ -201,7 +267,7 @@ module.exports = NodeHelper.create({
     let brightnessDeltaSum = 0;
 
     const pixelThreshold =
-      Number(config.pixelDiffThreshold) || 30;
+      toConfigNumber(config.pixelDiffThreshold, 30);
 
     for (let i = 0; i < frame.length; i++) {
       const delta = frame[i] - this.v4l2PreviousFrame[i];
@@ -209,7 +275,9 @@ module.exports = NodeHelper.create({
 
       brightnessDeltaSum += delta;
 
-      if (absDelta >= pixelThreshold) {
+      // a delta of zero means the pixel is identical to the previous frame,
+      // which is never significant, not even at a pixelDiffThreshold of zero
+      if (absDelta > 0 && absDelta >= pixelThreshold) {
         score++;
 
         if (delta > 0) {
@@ -233,11 +301,11 @@ module.exports = NodeHelper.create({
 
     const isLightChange =
       Math.abs(averageBrightnessDelta) >=
-        (Number(config.lightChangeThreshold) || 12) &&
+        toConfigNumber(config.lightChangeThreshold, 12) &&
       changedPixelRatio >=
-        (Number(config.lightChangePixelRatio) || 0.55) &&
+        toConfigNumber(config.lightChangePixelRatio, 0.55) &&
       dominantDirection >=
-        (Number(config.lightChangeDirectionRatio) || 0.80);
+        toConfigNumber(config.lightChangeDirectionRatio, 0.80);
 
     this.v4l2PreviousFrame = Buffer.from(frame);
 
@@ -259,8 +327,11 @@ module.exports = NodeHelper.create({
       return;
     }
 
+    // a score of zero means not a single pixel changed, which is never
+    // motion, not even at a scoreThreshold of zero; matches the DiffCamEngine
+    // semantics used by the browser backend
     const hasMotion =
-      score >= Number(config.scoreThreshold);
+      score > 0 && score >= toConfigNumber(config.scoreThreshold, 20);
 
     if (hasMotion) {
       this.v4l2LastMotionAt = Date.now();
@@ -295,10 +366,12 @@ module.exports = NodeHelper.create({
       monitorOn: this.v4l2MonitorOn
     });
 
+    const timeout = toConfigNumber(config.timeout, 120000);
+
     if (
       config.autoHideOnNoMotion !== false &&
-      Number(config.timeout) >= 0 &&
-      Date.now() - this.v4l2LastMotionAt > Number(config.timeout) &&
+      timeout >= 0 &&
+      Date.now() - this.v4l2LastMotionAt > timeout &&
       this.v4l2MonitorOn
     ) {
       this.v4l2MonitorOn = false;

@@ -1,25 +1,49 @@
 const path = require("node:path");
 const Module = require("node:module");
 const util = require("node:util");
+const { EventEmitter } = require("node:events");
 
 const HELPER_PATH = path.join(__dirname, "..", "node_helper.js");
+
+/**
+ * Build a fake child process good enough to stand in for the ffmpeg process
+ * spawned by the V4L2 backend: an EventEmitter with stdout/stderr streams
+ * (also EventEmitters) and a kill() that just records what it was called with,
+ * so tests can drive "data", "error" and "exit" by hand.
+ * @returns {EventEmitter}
+ */
+function createFakeProcess() {
+  const proc = new EventEmitter();
+  proc.stdout = new EventEmitter();
+  proc.stderr = new EventEmitter();
+  proc.killSignals = [];
+  proc.kill = (signal) => {
+    proc.killSignals.push(signal);
+  };
+  return proc;
+}
 
 /**
  * Load node_helper.js outside of a MagicMirror checkout.
  *
  * The helper pulls in "node_helper" and "../../js/logger", neither of which
  * exists when this repository is checked out on its own, and it runs the
- * monitor scripts through child_process.execFile. All three are swapped out
- * through a temporary require hook.
+ * monitor scripts through child_process.execFile and the V4L2 backend through
+ * child_process.spawn. All are swapped out through a temporary require hook.
  * @param options.run stands in for a command run, receives the command as one
  * string for convenience, returns {stdout, stderr} or throws
- * @returns {{helper: object, calls: object[], commands: string[], logs: object}}
+ * @param options.spawn stands in for child_process.spawn(command, args, options),
+ * receives the same arguments, returns a fake process (defaults to createFakeProcess())
+ * @returns {{helper: object, calls: object[], commands: string[], logs: object, notifications: object[], spawnCalls: object[]}}
  */
-function loadNodeHelper({ run } = {}) {
+function loadNodeHelper({ run, spawn } = {}) {
   const commands = [];
   const calls = [];
-  const logs = { error: [], info: [] };
+  const logs = { error: [], info: [], warn: [] };
+  const notifications = [];
+  const spawnCalls = [];
   const runHandler = run || (() => ({ stdout: "", stderr: "" }));
+  const spawnHandler = spawn || (() => createFakeProcess());
 
   // matches child_process.execFile: arguments arrive as a list and the callback
   // takes (error, stdout, stderr) as separate string arguments
@@ -57,13 +81,20 @@ function loadNodeHelper({ run } = {}) {
       });
     });
 
-  const fakeChildProcess = { execFile: fakeExecFile };
+  const fakeSpawn = (command, args, options) => {
+    const proc = spawnHandler(command, args, options);
+    spawnCalls.push({ command, args, options, proc });
+    return proc;
+  };
+
+  const fakeChildProcess = { execFile: fakeExecFile, spawn: fakeSpawn };
 
   const stubs = {
     node_helper: { create: (definition) => definition },
     "../../js/logger": {
       error: (message) => logs.error.push(message),
       info: (message) => logs.info.push(message),
+      warn: (message) => logs.warn.push(message),
     },
     child_process: fakeChildProcess,
     "node:child_process": fakeChildProcess,
@@ -79,8 +110,16 @@ function loadNodeHelper({ run } = {}) {
 
   try {
     delete require.cache[require.resolve(HELPER_PATH)];
-    const helper = require(HELPER_PATH);
-    return { helper: Object.create(helper), calls, commands, logs };
+    const definition = require(HELPER_PATH);
+    const helper = Object.create(definition);
+
+    // the real NodeHelper base class provides this; sendSocketNotification
+    // calls are recorded here instead of actually going over a socket
+    helper.sendSocketNotification = (notification, payload) => {
+      notifications.push({ notification, payload });
+    };
+
+    return { helper, calls, commands, logs, notifications, spawnCalls };
   } finally {
     Module._load = originalLoad;
   }
@@ -94,4 +133,4 @@ function flush() {
   return new Promise((resolve) => setImmediate(resolve));
 }
 
-module.exports = { loadNodeHelper, flush };
+module.exports = { loadNodeHelper, flush, createFakeProcess };

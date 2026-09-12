@@ -56,7 +56,13 @@ function loadModule(config = {}) {
   // start() emits INIT_MONITOR, tests care about what happens afterwards
   module.notifications.length = 0;
 
-  return { module, capture: engineOptions.captureCallback, initError: engineOptions.initErrorCallback };
+  // the v4l2 backend returns from start() before DiffCamEngine.init() is
+  // ever called, so there is no captureCallback/initErrorCallback to hand back
+  return {
+    module,
+    capture: engineOptions ? engineOptions.captureCallback : undefined,
+    initError: engineOptions ? engineOptions.initErrorCallback : undefined,
+  };
 }
 
 /**

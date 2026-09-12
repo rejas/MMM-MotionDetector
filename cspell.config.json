@@ -17,11 +17,12 @@
     "randr",
     "raspi",
     "raspiOS",
+    "rawvideo",
     "rejas",
     "shellcheck",
     "tvservice",
     "vcgencmd"
   ],
-  "ignorePaths": ["node_modules/**"],
+  "ignorePaths": ["node_modules/**", "QA/**"],
   "dictionaries": ["node"]
 }
