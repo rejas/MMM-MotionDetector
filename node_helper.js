@@ -6,9 +6,20 @@ const Log = require("../../js/logger");
 const path = require("path");
 
 const VALID_PLATFORMS = ["x11", "cec", "labwc", "mac-arm", "mac-intel"];
-// A change covering a quarter of the image can be an early exposure step.
-// This only requests one frame of confirmation; it does not classify light.
-const V4L2_WAKE_CONFIRM_PIXEL_RATIO = 0.25;
+// While the monitor is off, a candidate this large may be an early auto exposure
+// step. The ratio only selects candidates for confirmation; it never classifies light.
+const WAKE_CONFIRMATION_PIXEL_RATIO = 0.25;
+const WAKE_CONFIRMATION_FRAMES = 3;
+
+function wakeConfirmationPixelRatio (config) {
+  const ratio = toConfigNumber(config.wakeConfirmationPixelRatio, WAKE_CONFIRMATION_PIXEL_RATIO);
+  return ratio >= 0 && ratio <= 1 ? ratio : WAKE_CONFIRMATION_PIXEL_RATIO;
+}
+
+function wakeConfirmationFrames (config) {
+  const frames = toConfigNumber(config.wakeConfirmationFrames, WAKE_CONFIRMATION_FRAMES);
+  return Number.isInteger(frames) && frames >= 1 ? frames : WAKE_CONFIRMATION_FRAMES;
+}
 
 /**
  * Describe a failed monitor command. A script that ran and failed carries
@@ -340,7 +351,6 @@ module.exports = NodeHelper.create({
 
     this.v4l2PreviousFrame = Buffer.from(frame);
     const pendingMotionScore = this.v4l2PendingMotionScore || 0;
-    this.v4l2PendingMotionScore = 0;
 
     if (isLightChange) {
       Log.info(
@@ -350,6 +360,10 @@ module.exports = NodeHelper.create({
         `direction=${Math.round(dominantDirection * 100)}%).`
       );
 
+      if (pendingMotionScore > 0) {
+        this.v4l2PendingMotionScore = 0;
+        Log.info("held-back wake discarded by light change.");
+      }
       this.v4l2IgnoreNextFrame = true;
       this.processV4L2NoMotion(score, false);
       return;
@@ -362,9 +376,20 @@ module.exports = NodeHelper.create({
       return;
     }
 
-    // A confirmed light/stabilization frame above discards the pending candidate.
-    // Otherwise retain it even if the person stopped moving in this frame.
-    score = Math.max(score, pendingMotionScore);
+    if (pendingMotionScore > 0) {
+      // Slow auto exposure can take several frames before one of them is global
+      // enough for the light filter, so no frame in between may release the wake.
+      // The strongest score is kept, so a person who stops moving is not lost.
+      this.v4l2PendingMotionScore = Math.max(pendingMotionScore, score);
+      this.v4l2PendingWakeFrames--;
+      if (this.v4l2PendingWakeFrames > 0) {
+        this.processV4L2NoMotion(score);
+        return;
+      }
+      score = this.v4l2PendingMotionScore;
+      this.v4l2PendingMotionScore = 0;
+      Log.info("held-back wake confirmed.");
+    }
 
     // a score of zero means not a single pixel changed, which is never
     // motion, not even at a scoreThreshold of zero; matches the DiffCamEngine
@@ -376,9 +401,11 @@ module.exports = NodeHelper.create({
       hasMotion &&
       !this.v4l2MonitorOn &&
       pendingMotionScore === 0 &&
-      changedPixelRatio >= V4L2_WAKE_CONFIRM_PIXEL_RATIO
+      changedPixelRatio >= wakeConfirmationPixelRatio(config)
     ) {
       this.v4l2PendingMotionScore = score;
+      this.v4l2PendingWakeFrames = wakeConfirmationFrames(config);
+      Log.info(`large wake candidate held back for confirmation (score: ${score}).`);
       this.processV4L2NoMotion(score);
       return;
     }
