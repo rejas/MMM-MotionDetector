@@ -10,10 +10,19 @@ const VALID_PLATFORMS = ["x11", "cec", "labwc", "mac-arm", "mac-intel"];
 // step. The ratio only selects candidates for confirmation; it never classifies light.
 const WAKE_CONFIRMATION_PIXEL_RATIO = 0.25;
 const WAKE_CONFIRMATION_FRAMES = 3;
+const WAKE_LIGHT_CHANGE_PIXEL_RATIO = 0.3;
+
+function ratioOption (value, fallback) {
+  const ratio = toConfigNumber(value, fallback);
+  return ratio >= 0 && ratio <= 1 ? ratio : fallback;
+}
 
 function wakeConfirmationPixelRatio (config) {
-  const ratio = toConfigNumber(config.wakeConfirmationPixelRatio, WAKE_CONFIRMATION_PIXEL_RATIO);
-  return ratio >= 0 && ratio <= 1 ? ratio : WAKE_CONFIRMATION_PIXEL_RATIO;
+  return ratioOption(config.wakeConfirmationPixelRatio, WAKE_CONFIRMATION_PIXEL_RATIO);
+}
+
+function wakeLightChangePixelRatio (config) {
+  return ratioOption(config.wakeLightChangePixelRatio, WAKE_LIGHT_CHANGE_PIXEL_RATIO);
 }
 
 function wakeConfirmationFrames (config) {
@@ -341,16 +350,24 @@ module.exports = NodeHelper.create({
         ? Math.max(brighter, darker) / score
         : 0;
 
+    const lightChangeThreshold =
+      toConfigNumber(config.lightChangeThreshold, 12);
+    const lightChangeDirectionRatio =
+      toConfigNumber(config.lightChangeDirectionRatio, 0.80);
+    const scoreThreshold = toConfigNumber(config.scoreThreshold, 20);
+
     const isLightChange =
-      Math.abs(averageBrightnessDelta) >=
-        toConfigNumber(config.lightChangeThreshold, 12) &&
+      Math.abs(averageBrightnessDelta) >= lightChangeThreshold &&
       changedPixelRatio >=
         toConfigNumber(config.lightChangePixelRatio, 0.55) &&
-      dominantDirection >=
-        toConfigNumber(config.lightChangeDirectionRatio, 0.80);
+      dominantDirection >= lightChangeDirectionRatio;
 
     this.v4l2PreviousFrame = Buffer.from(frame);
     const pendingMotionScore = this.v4l2PendingMotionScore || 0;
+    const frameStats = () =>
+      `(score=${score}, pixels=${(changedPixelRatio * 100).toFixed(1)}%, ` +
+      `brightness=${averageBrightnessDelta.toFixed(1)}, ` +
+      `direction=${(dominantDirection * 100).toFixed(1)}%)`;
 
     if (isLightChange) {
       Log.info(
@@ -376,6 +393,25 @@ module.exports = NodeHelper.create({
       return;
     }
 
+    // Switching the light in a dark room changes fewer pixels strongly enough than
+    // lightChangePixelRatio demands, although brightness and direction are
+    // unambiguous. Only the decision to wake a monitor that is off uses the lower
+    // ratio; brightness and direction stay mandatory so textured motion still wakes.
+    if (
+      !this.v4l2MonitorOn &&
+      score > 0 &&
+      score >= scoreThreshold &&
+      Math.abs(averageBrightnessDelta) >= lightChangeThreshold &&
+      changedPixelRatio >= wakeLightChangePixelRatio(config) &&
+      dominantDirection >= lightChangeDirectionRatio
+    ) {
+      Log.info(`wake candidate ignored as global light change ${frameStats()}.`);
+      this.v4l2PendingMotionScore = 0;
+      this.v4l2IgnoreNextFrame = true;
+      this.processV4L2NoMotion(score, false);
+      return;
+    }
+
     if (pendingMotionScore > 0) {
       // Slow auto exposure can take several frames before one of them is global
       // enough for the light filter, so no frame in between may release the wake.
@@ -394,8 +430,7 @@ module.exports = NodeHelper.create({
     // a score of zero means not a single pixel changed, which is never
     // motion, not even at a scoreThreshold of zero; matches the DiffCamEngine
     // semantics used by the browser backend
-    const hasMotion =
-      score > 0 && score >= toConfigNumber(config.scoreThreshold, 20);
+    const hasMotion = score > 0 && score >= scoreThreshold;
 
     if (
       hasMotion &&
@@ -405,7 +440,7 @@ module.exports = NodeHelper.create({
     ) {
       this.v4l2PendingMotionScore = score;
       this.v4l2PendingWakeFrames = wakeConfirmationFrames(config);
-      Log.info(`large wake candidate held back for confirmation (score: ${score}).`);
+      Log.info(`large wake candidate held back for confirmation ${frameStats()}.`);
       this.processV4L2NoMotion(score);
       return;
     }

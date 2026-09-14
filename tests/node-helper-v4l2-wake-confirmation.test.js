@@ -4,7 +4,8 @@ const { loadNodeHelper, flush } = require("./node-helper-mock");
 const { loadModule } = require("./module-mock");
 
 const SIZE = 160 * 120;
-const baseline = Buffer.alloc(SIZE, 20);
+// mid-grey, so a person can differ from it in both directions
+const baseline = Buffer.alloc(SIZE, 110);
 
 async function setup(t, first, { off = true, config = {} } = {}) {
   let now = 1000;
@@ -42,9 +43,11 @@ async function setup(t, first, { off = true, config = {} } = {}) {
   return state;
 }
 
-function person(base, from, to, value = 220) {
+// A person is textured, some pixels brighter and some darker than the background.
+// A uniform bright block would be indistinguishable from a light change.
+function person(base, from, to) {
   const frame = Buffer.from(base);
-  frame.fill(value, from, to);
+  for (let i = from; i < to; i++) frame[i] = i % 2 ? 230 : 0;
   return frame;
 }
 
@@ -54,22 +57,34 @@ const r0 = person(baseline, 0, 7000);
 const r1 = person(baseline, 7000, 14000);
 const r2 = person(baseline, 14000, SIZE);
 
+// light on brightens every level, light off is the same ramp mirrored
+function rampFrame(direction, fill) {
+  const buffer = Buffer.alloc(SIZE);
+  for (let i = 0; i < SIZE; i++) buffer[i] = direction === "on" ? fill(i) : 255 - fill(i);
+  return buffer;
+}
+
 // Reconstructed dark-room auto exposure: the camera needs several frames before a
 // frame differs globally enough for the light filter. First steps match the Pi log.
 function nightRamp(direction, firstChanged = 6532) {
-  const level = (value) => (direction === "on" ? value : 255 - value);
-  const frame = (fill) => {
-    const buffer = Buffer.alloc(SIZE);
-    for (let i = 0; i < SIZE; i++) buffer[i] = level(fill(i));
-    return buffer;
-  };
   return {
-    a: frame(() => 8),
-    b: frame((i) => (i < firstChanged ? 48 : 8)),
-    c: frame((i) => (i < 8640 ? 88 : 8)),
-    d: frame((i) => (i < 9984 ? 128 : 8)),
-    e: frame(() => 168),
-    lit: frame(() => 128)
+    a: rampFrame(direction, () => 8),
+    b: rampFrame(direction, (i) => (i < firstChanged ? 48 : 8)),
+    c: rampFrame(direction, (i) => (i < 8640 ? 88 : 8)),
+    lit: rampFrame(direction, () => 128)
+  };
+}
+
+// Every step stays below the brightness criterion of the wake light classification
+// (34 % of the pixels at 33 is an average of 11.2), so only the confirmation window
+// can catch the global step that follows on the third frame after the candidate.
+function slowRamp(direction) {
+  return {
+    a: rampFrame(direction, () => 8),
+    b: rampFrame(direction, (i) => (i < 6532 ? 41 : 8)),
+    c: rampFrame(direction, (i) => (i < 8640 ? 41 : 8)),
+    d: rampFrame(direction, (i) => (i < 9984 ? 41 : 8)),
+    e: rampFrame(direction, () => 168)
   };
 }
 
@@ -86,18 +101,18 @@ for (const direction of ["on", "off"]) {
     });
   }
 
-  it(`night light ${direction}: light confirmed on the last window frame still discards the wake`, async (t) => {
-    const { a, b, c, d, e } = nightRamp(direction);
+  it(`slow light ${direction}: light confirmed on the last window frame still discards the wake`, async (t) => {
+    const { a, b, c, d, e } = slowRamp(direction);
     const s = await setup(t, a);
-    // B candidate, C 45 %, D 52 % (both below the light filter), E global light, then stabilization
+    // B candidate (34 %), C and D small steps, E global light on the third window frame, then stabilization
     const trace = await s.run([b, c, d, e, e, e]);
     assert.deepEqual(trace, [0, 0, 0, 0, 0, 0]);
     assert.equal(s.helper.v4l2MonitorOn, false);
     assert.equal(s.motion().length, 0);
   });
 
-  it(`night light ${direction}: a two frame window releases before that late classification`, async (t) => {
-    const { a, b, c, d } = nightRamp(direction);
+  it(`slow light ${direction}: a two frame window releases before that late classification`, async (t) => {
+    const { a, b, c, d } = slowRamp(direction);
     const s = await setup(t, a, { config: { wakeConfirmationFrames: 2 } });
     const trace = await s.run([b, c, d]);
     assert.deepEqual(trace, [0, 0, 1], "the window must end after exactly wakeConfirmationFrames follow-up frames");
@@ -117,7 +132,7 @@ for (const direction of ["on", "off"]) {
   it(`night light ${direction}: large real motion after the stabilization pends and then wakes`, async (t) => {
     const { a, b, c, lit } = nightRamp(direction);
     const s = await setup(t, a);
-    const big = person(lit, 0, 7000, direction === "on" ? 255 : 0);
+    const big = person(lit, 0, 7000);
     const trace = await s.run([b, c, lit, lit, big, big, big, big, big]);
     assert.deepEqual(trace, [0, 0, 0, 0, 0, 0, 0, 1, 1]);
     assert.equal(s.motion().length, 1, "the identical frame after the wake carries no further motion");

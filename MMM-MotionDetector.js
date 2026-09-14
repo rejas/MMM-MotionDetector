@@ -16,6 +16,7 @@ Module.register("MMM-MotionDetector", {
     autoHideOnNoMotion: true,
     wakeConfirmationPixelRatio: 0.25,
     wakeConfirmationFrames: 3,
+    wakeLightChangePixelRatio: 0.30,
   },
 
   lastScoreDetected: null,

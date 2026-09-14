@@ -8,6 +8,14 @@ const SECOND_CHANGED = 15160;
 // These tests pin the original single-frame contract, now an explicit setting.
 const ONE_FRAME = { wakeConfirmationFrames: 1 };
 
+// Strong local motion is textured, some pixels brighter and some darker than the
+// background. A uniform bright block is indistinguishable from a light change.
+function texturedPerson(base, from, to) {
+  const frame = Buffer.from(base);
+  for (let i = from; i < to; i++) frame[i] = i % 2 ? 230 : 0;
+  return frame;
+}
+
 // Reconstruct an exposure transition, rather than replaying unavailable camera images.
 // A -> B: 8,841 significant pixels (46.05%), plus a small change elsewhere.
 // B -> C: 15,160 significant pixels (78.96%), mean delta 56.3229, one direction.
@@ -117,9 +125,8 @@ it("HW-01 ordinary local motion wakes without a confirmation frame", async (t) =
 
 for (const continues of [false, true]) {
   it(`HW-01 strong local motion wakes on the next frame, continuation ${continues}`, async (t) => {
-    const baseline = Buffer.alloc(SIZE, 20);
-    const person = Buffer.from(baseline);
-    person.fill(220, 0, 7000);
+    const baseline = Buffer.alloc(SIZE, 110);
+    const person = texturedPerson(baseline, 0, 7000);
     const s = await setup(t, baseline, { config: ONE_FRAME });
     await s.send(person);
     assert.equal(s.onCount(), 0, "ambiguous large motion gets exactly one confirmation frame");
@@ -137,10 +144,8 @@ for (const continues of [false, true]) {
 
 it("HW-01 repeated strong motion cannot postpone confirmation indefinitely", async (t) => {
   const baseline = Buffer.alloc(SIZE, 100);
-  const first = Buffer.from(baseline);
-  first.fill(200, 0, 7000);
-  const next = Buffer.from(baseline);
-  next.fill(200, 7000, 14000);
+  const first = texturedPerson(baseline, 0, 7000);
+  const next = texturedPerson(baseline, 7000, 14000);
   const s = await setup(t, baseline, { config: ONE_FRAME });
   await s.send(first);
   assert.equal(s.onCount(), 0);
@@ -166,8 +171,10 @@ it("HW-01 a large candidate does not require missing brightness or direction mea
 
 for (const ending of ["restart", "failure", "shutdown"]) {
   it(`HW-01 a pending wake does not survive camera ${ending}`, async (t) => {
-    const [a, b] = transition("on");
-    const s = await setup(t, a);
+    const a = Buffer.alloc(SIZE, 110);
+    const b = texturedPerson(a, 0, FIRST_CHANGED);
+    // one confirmation frame, so a surviving candidate would wake on the second frame
+    const s = await setup(t, a, { config: ONE_FRAME });
     await s.send(b);
     assert.equal(s.onCount(), 0);
     if (ending === "failure") s.helper.v4l2Process.emit("exit", 1, null);
@@ -193,7 +200,8 @@ for (const pixels of [4799, 4800]) {
 }
 
 it("HW-01 confirmation waits for a complete frame rather than a data chunk", async (t) => {
-  const [a, b] = transition("on");
+  const a = Buffer.alloc(SIZE, 110);
+  const b = texturedPerson(a, 0, FIRST_CHANGED);
   const s = await setup(t, a, { config: ONE_FRAME });
   await s.send(b);
   const proc = s.helper.v4l2Process;
@@ -207,7 +215,8 @@ it("HW-01 confirmation waits for a complete frame rather than a data chunk", asy
 
 for (const interval of [200, 1000, 2000]) {
   it(`HW-01 strong motion adds exactly one ${interval} ms capture cycle`, async (t) => {
-    const [a, b] = transition("on");
+    const a = Buffer.alloc(SIZE, 110);
+    const b = texturedPerson(a, 0, FIRST_CHANGED);
     const s = await setup(t, a, { config: { ...ONE_FRAME, captureIntervalTime: interval } });
     await s.send(b, interval);
     assert.equal(s.onCount(), 0);
