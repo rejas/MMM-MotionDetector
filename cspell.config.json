@@ -23,6 +23,6 @@
     "tvservice",
     "vcgencmd"
   ],
-  "ignorePaths": ["node_modules/**", "QA/**"],
+  "ignorePaths": ["node_modules/**"],
   "dictionaries": ["node"]
 }
