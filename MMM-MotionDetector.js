@@ -9,6 +9,8 @@ Module.register("MMM-MotionDetector", {
     deviceId: null,
 
     cameraDevice: "/dev/video0",
+    captureWidth: 320,
+    captureHeight: 240,
     pixelDiffThreshold: 30,
     lightChangeThreshold: 12,
     lightChangePixelRatio: 0.55,

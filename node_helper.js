@@ -191,12 +191,14 @@ module.exports = NodeHelper.create({
 
     const fps = 1000 / interval;
     const device = config.cameraDevice || "/dev/video0";
+    const captureWidth = toConfigNumber(config.captureWidth, 320);
+    const captureHeight = toConfigNumber(config.captureHeight, 240);
 
     const args = [
       "-hide_banner",
       "-loglevel", "error",
       "-f", "v4l2",
-      "-video_size", "320x240",
+      "-video_size", `${captureWidth}x${captureHeight}`,
       "-i", device,
       "-vf", `fps=${fps},scale=${width}:${height},format=gray`,
       "-f", "rawvideo",
