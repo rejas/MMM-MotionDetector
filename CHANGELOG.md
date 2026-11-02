@@ -4,7 +4,24 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [develop](https://github.com/rejas/MMM-MotionDetector/compare/v1.8.1...develop) - unreleased
+## [develop](https://github.com/rejas/MMM-MotionDetector/compare/v1.9.0...develop) - unreleased
+
+## [1.9.0](https://github.com/rejas/MMM-MotionDetector/compare/v1.8.1...v1.9.0) - 2026-11-02
+
+### Added
+
+- Optional server-side V4L2 camera backend (`cameraBackend: "v4l2"`), reading `/dev/video*` through `ffmpeg` for Linux and Raspberry Pi cameras that Electron cannot see; `browser` stays the default (#130)
+- V4L2 options `cameraDevice`, `captureWidth`, `captureHeight`, `pixelDiffThreshold` and `autoHideOnNoMotion` (#130)
+- Filter for sudden global light changes in the V4L2 backend, so switching room lights on or off is not treated as motion (`lightChangeThreshold`, `lightChangePixelRatio`, `lightChangeDirectionRatio`, `wakeLightChangePixelRatio`) (#130)
+- Wake confirmation for large changes while the monitor is off, so an auto exposure ramp cannot wake it (`wakeConfirmationPixelRatio`, `wakeConfirmationFrames`) (#130)
+
+### Changed
+
+- Dev dependencies updated to their latest versions (#139)
+
+### Security
+
+- Transitive dev dependency updated to fix Dependabot alert #32
 
 ## [1.8.1](https://github.com/rejas/MMM-MotionDetector/compare/v1.8.0...v1.8.1) - 2026-09-01
 

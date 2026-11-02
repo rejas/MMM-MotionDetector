@@ -11,13 +11,15 @@ const MODULE_SOURCE = fs.readFileSync(path.join(__dirname, "..", "MMM-MotionDete
  * so we stub the engine out and keep the options object it receives. That gives us
  * a handle on captureCallback, which can then be driven frame by frame.
  * @param config config overrides merged over the module defaults
+ * @param clock Date constructor, replaceable for deterministic timeline tests
  * @returns {{module: object, capture: Function, initError: Function}}
  */
-function loadModule(config = {}) {
+function loadModule(config = {}, clock = Date) {
   let definition;
   let engineOptions;
 
   const sandbox = {
+    Date: clock,
     Module: {
       register: (name, moduleDefinition) => {
         definition = moduleDefinition;
@@ -56,7 +58,13 @@ function loadModule(config = {}) {
   // start() emits INIT_MONITOR, tests care about what happens afterwards
   module.notifications.length = 0;
 
-  return { module, capture: engineOptions.captureCallback, initError: engineOptions.initErrorCallback };
+  // the v4l2 backend returns from start() before DiffCamEngine.init() is
+  // ever called, so there is no captureCallback/initErrorCallback to hand back
+  return {
+    module,
+    capture: engineOptions ? engineOptions.captureCallback : undefined,
+    initError: engineOptions ? engineOptions.initErrorCallback : undefined,
+  };
 }
 
 /**
